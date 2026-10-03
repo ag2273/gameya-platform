@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة الجمعيات الذكية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-center mb-6 text-indigo-600">منصة الجمعيات الذكية</h1>
+        
+        <div id="gameya-form" class="space-y-4 mb-8">
+            <input type="text" id="g-name" placeholder="اسم الجمعية" class="w-full p-2 border rounded">
+            <input type="number" id="g-total" placeholder="إجمالي مبلغ السهم" class="w-full p-2 border rounded">
+            <button onclick="createGameya()" class="w-full bg-indigo-600 text-white p-2 rounded">إنشاء جمعية</button>
+        </div>
+
+        <div id="gameya-list" class="space-y-4">
+            <!-- قائمة الجمعيات ستظهر هنا -->
+        </div>
+    </div>
+
+    <script>
+        async function createGameya() {
+            const data = {
+                name: document.getElementById('g-name').value,
+                total_amount: parseFloat(document.getElementById('g-total').value),
+                monthly_installment: parseFloat(document.getElementById('g-total').value) / 10,
+                total_months: 10
+            };
+            await fetch('/gameyas/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            alert('تم إنشاء الجمعية!');
+            location.reload();
+        }
+    </script>
+</body>
+</html>
