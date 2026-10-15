@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "44131805915",
+    "project_id": "gameya-platform",
+    "storage_bucket": "gameya-platform.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44131805915:android:4dbff7a9ddf6e06bfbfafe",
+        "android_client_info": {
+          "package_name": "cpm.growthconsultingAI.gam3eya"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44131805915-qeu9eo0evlfmr3919bagjtis3kjqnldm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVB1OwVX2es2WNCKMlc7EVA_jBDIzizqE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44131805915-qeu9eo0evlfmr3919bagjtis3kjqnldm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

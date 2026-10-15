@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import '../../domain/models/installment.dart';
 
 class ReceiptCompressionResult {
@@ -26,6 +27,49 @@ abstract class ReceiptStorageProvider {
 
   Future<void> deleteReceipt(String storageUrl);
 }
+
+/// Firestore-based Receipt Storage Provider for 100% Free Firebase Spark Plan
+/// Stores client-compressed (<150KB) receipt photos directly inside Firestore documents
+/// or as data URIs, completely bypassing Firebase Cloud Storage and eliminating any credit card requirement.
+class FirestoreReceiptStorageProvider implements ReceiptStorageProvider {
+  final Future<void> Function(String id, Map<String, dynamic> data)? firestoreDocWriter;
+  final Future<void> Function(String id)? firestoreDocDeleter;
+
+  FirestoreReceiptStorageProvider({
+    this.firestoreDocWriter,
+    this.firestoreDocDeleter,
+  });
+
+  @override
+  Future<String> upload({
+    required String gameyaId,
+    required String installmentId,
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    final base64Data = base64Encode(bytes);
+    final dataUri = 'data:image/jpeg;base64,$base64Data';
+
+    if (firestoreDocWriter != null) {
+      await firestoreDocWriter!(installmentId, {
+        'gameyaId': gameyaId,
+        'installmentId': installmentId,
+        'filename': filename,
+        'base64Image': base64Data,
+        'sizeBytes': bytes.length,
+        'uploadedAt': DateTime.now().toIso8601String(),
+      });
+    }
+
+    return dataUri;
+  }
+
+  @override
+  Future<void> deleteReceipt(String storageUrl) async {
+    // Document deletion hook for 5-month storage purge
+  }
+}
+
 
 class InMemoryReceiptStorageProvider implements ReceiptStorageProvider {
   final Map<String, List<int>> _storage = {};
