@@ -36,9 +36,12 @@ class FirestoreGameyaRepository {
         .collection('gameyas')
         .doc(gameyaId)
         .snapshots()
-        .map((snapshot) {
+        .map<Gameya?>((snapshot) {
       if (!snapshot.exists || snapshot.data() == null) return null;
       return Gameya.fromMap(snapshot.data()!, snapshot.id);
+    }).handleError((error) {
+      // Gracefully prevent unhandled permission-denied crash
+      return null;
     });
   }
 
@@ -49,10 +52,12 @@ class FirestoreGameyaRepository {
         .doc(gameyaId)
         .collection('members')
         .snapshots()
-        .map((snapshot) {
+        .map<List<MemberShare>>((snapshot) {
       return snapshot.docs
           .map((doc) => MemberShare.fromMap(doc.data(), doc.id))
           .toList();
+    }).handleError((error) {
+      return <MemberShare>[];
     });
   }
 
@@ -64,10 +69,12 @@ class FirestoreGameyaRepository {
         .collection('installments')
         .where('monthNumber', isEqualTo: monthNumber)
         .snapshots()
-        .map((snapshot) {
+        .map<List<Installment>>((snapshot) {
       return snapshot.docs
           .map((doc) => Installment.fromMap(doc.data(), doc.id))
           .toList();
+    }).handleError((error) {
+      return <Installment>[];
     });
   }
 
@@ -171,89 +178,93 @@ class FirestoreGameyaRepository {
 
   /// Seeds initial demo Gameya if database is empty, so user can immediately view live data.
   Future<void> seedInitialGameyaIfEmpty(String gameyaId) async {
-    final doc = await _firestore.collection('gameyas').doc(gameyaId).get();
-    if (doc.exists) return; // Already exists
+    try {
+      final doc = await _firestore.collection('gameyas').doc(gameyaId).get();
+      if (doc.exists) return; // Already exists
 
-    // 1. Create main Gameya document
-    final gameya = Gameya(
-      id: gameyaId,
-      name: 'جمعية العائلة الكبرى (10 شهور)',
-      organizerId: _auth.currentUser?.uid ?? 'organizer_ayman',
-      totalPot: 50000.0,
-      monthlyShareInstallment: 5000.0,
-      totalMonths: 10,
-      startDate: DateTime(2026, 1, 1),
-      status: GameyaStatus.active,
-      inviteCode: 'INV-FAMILY-2026',
-      currency: 'ج.م',
-      gracePeriodDays: 7,
-      createdAt: DateTime.now(),
-    );
-    await _firestore.collection('gameyas').doc(gameyaId).set(gameya.toMap());
+      // 1. Create main Gameya document
+      final gameya = Gameya(
+        id: gameyaId,
+        name: 'جمعية العائلة الكبرى (10 شهور)',
+        organizerId: _auth.currentUser?.uid ?? 'organizer_ayman',
+        totalPot: 50000.0,
+        monthlyShareInstallment: 5000.0,
+        totalMonths: 10,
+        startDate: DateTime(2026, 1, 1),
+        status: GameyaStatus.active,
+        inviteCode: 'INV-FAMILY-2026',
+        currency: 'ج.م',
+        gracePeriodDays: 7,
+        createdAt: DateTime.now(),
+      );
+      await _firestore.collection('gameyas').doc(gameyaId).set(gameya.toMap());
 
-    // 2. Create Members
-    final membersData = [
-      {'id': 'm1', 'name': 'أحمد محمود', 'phone': '01011111111', 'ratio': 1.0, 'amount': 5000.0, 'month': 3},
-      {'id': 'm2', 'name': 'محمد عبد الله', 'phone': '01022222222', 'ratio': 0.5, 'amount': 2500.0, 'month': 7},
-      {'id': 'm3', 'name': 'كريم حسن', 'phone': '01033333333', 'ratio': 0.5, 'amount': 2500.0, 'month': 4},
-      {'id': 'm4', 'name': 'سارة إبراهيم', 'phone': '01044444444', 'ratio': 1.0, 'amount': 5000.0, 'month': 8},
-      {'id': 'm5', 'name': 'محمود عبد العزيز', 'phone': '01055555555', 'ratio': 1.0, 'amount': 5000.0, 'month': 1},
-      {'id': 'm6', 'name': 'منى الشاذلي', 'phone': '01066666666', 'ratio': 1.0, 'amount': 5000.0, 'month': 2},
-      {'id': 'm7', 'name': 'ياسر جلال', 'phone': '01077777777', 'ratio': 1.0, 'amount': 5000.0, 'month': 5},
-      {'id': 'm8', 'name': 'هاني شاكر', 'phone': '01088888888', 'ratio': 1.0, 'amount': 5000.0, 'month': 6},
-      {'id': 'm9', 'name': 'عمرو دياب', 'phone': '01099999999', 'ratio': 1.0, 'amount': 5000.0, 'month': 9},
-      {'id': 'm10', 'name': 'تامر حسني', 'phone': '01000000000', 'ratio': 1.0, 'amount': 5000.0, 'month': 10},
-    ];
+      // 2. Create Members
+      final membersData = [
+        {'id': 'm1', 'name': 'أحمد محمود', 'phone': '01011111111', 'ratio': 1.0, 'amount': 5000.0, 'month': 3},
+        {'id': 'm2', 'name': 'محمد عبد الله', 'phone': '01022222222', 'ratio': 0.5, 'amount': 2500.0, 'month': 7},
+        {'id': 'm3', 'name': 'كريم حسن', 'phone': '01033333333', 'ratio': 0.5, 'amount': 2500.0, 'month': 4},
+        {'id': 'm4', 'name': 'سارة إبراهيم', 'phone': '01044444444', 'ratio': 1.0, 'amount': 5000.0, 'month': 8},
+        {'id': 'm5', 'name': 'محمود عبد العزيز', 'phone': '01055555555', 'ratio': 1.0, 'amount': 5000.0, 'month': 1},
+        {'id': 'm6', 'name': 'منى الشاذلي', 'phone': '01066666666', 'ratio': 1.0, 'amount': 5000.0, 'month': 2},
+        {'id': 'm7', 'name': 'ياسر جلال', 'phone': '01077777777', 'ratio': 1.0, 'amount': 5000.0, 'month': 5},
+        {'id': 'm8', 'name': 'هاني شاكر', 'phone': '01088888888', 'ratio': 1.0, 'amount': 5000.0, 'month': 6},
+        {'id': 'm9', 'name': 'عمرو دياب', 'phone': '01099999999', 'ratio': 1.0, 'amount': 5000.0, 'month': 9},
+        {'id': 'm10', 'name': 'تامر حسني', 'phone': '01000000000', 'ratio': 1.0, 'amount': 5000.0, 'month': 10},
+      ];
 
-    for (final m in membersData) {
-      await _firestore
-          .collection('gameyas')
-          .doc(gameyaId)
-          .collection('members')
-          .doc(m['id'] as String)
-          .set({
-        'id': m['id'],
-        'gameyaId': gameyaId,
-        'shareGroupId': 1,
-        'memberName': m['name'],
-        'phone': m['phone'],
-        'shareRatio': m['ratio'],
-        'installmentAmount': m['amount'],
-        'payoutMonth': m['month'],
-      });
-    }
+      for (final m in membersData) {
+        await _firestore
+            .collection('gameyas')
+            .doc(gameyaId)
+            .collection('members')
+            .doc(m['id'] as String)
+            .set({
+          'id': m['id'],
+          'gameyaId': gameyaId,
+          'shareGroupId': 1,
+          'memberName': m['name'],
+          'phone': m['phone'],
+          'shareRatio': m['ratio'],
+          'installmentAmount': m['amount'],
+          'payoutMonth': m['month'],
+        });
+      }
 
-    // 3. Create Month 3 Installments
-    final installmentsData = [
-      {'id': 'inst_1', 'memberId': 'm1', 'status': InstallmentStatus.paid, 'amount': 5000.0},
-      {'id': 'inst_2', 'memberId': 'm2', 'status': InstallmentStatus.paid, 'amount': 2500.0},
-      {'id': 'inst_3', 'memberId': 'm3', 'status': InstallmentStatus.pending, 'amount': 2500.0},
-      {'id': 'inst_4', 'memberId': 'm4', 'status': InstallmentStatus.review, 'amount': 5000.0},
-      {'id': 'inst_5', 'memberId': 'm5', 'status': InstallmentStatus.paid, 'amount': 5000.0},
-      {'id': 'inst_6', 'memberId': 'm6', 'status': InstallmentStatus.paid, 'amount': 5000.0},
-      {'id': 'inst_7', 'memberId': 'm7', 'status': InstallmentStatus.paid, 'amount': 5000.0},
-      {'id': 'inst_8', 'memberId': 'm8', 'status': InstallmentStatus.paid, 'amount': 5000.0},
-      {'id': 'inst_9', 'memberId': 'm9', 'status': InstallmentStatus.paid, 'amount': 5000.0},
-      {'id': 'inst_10', 'memberId': 'm10', 'status': InstallmentStatus.paid, 'amount': 5000.0},
-    ];
+      // 3. Create Month 3 Installments
+      final installmentsData = [
+        {'id': 'inst_1', 'memberId': 'm1', 'status': InstallmentStatus.paid, 'amount': 5000.0},
+        {'id': 'inst_2', 'memberId': 'm2', 'status': InstallmentStatus.paid, 'amount': 2500.0},
+        {'id': 'inst_3', 'memberId': 'm3', 'status': InstallmentStatus.pending, 'amount': 2500.0},
+        {'id': 'inst_4', 'memberId': 'm4', 'status': InstallmentStatus.review, 'amount': 5000.0},
+        {'id': 'inst_5', 'memberId': 'm5', 'status': InstallmentStatus.paid, 'amount': 5000.0},
+        {'id': 'inst_6', 'memberId': 'm6', 'status': InstallmentStatus.paid, 'amount': 5000.0},
+        {'id': 'inst_7', 'memberId': 'm7', 'status': InstallmentStatus.paid, 'amount': 5000.0},
+        {'id': 'inst_8', 'memberId': 'm8', 'status': InstallmentStatus.paid, 'amount': 5000.0},
+        {'id': 'inst_9', 'memberId': 'm9', 'status': InstallmentStatus.paid, 'amount': 5000.0},
+        {'id': 'inst_10', 'memberId': 'm10', 'status': InstallmentStatus.paid, 'amount': 5000.0},
+      ];
 
-    for (final inst in installmentsData) {
-      final status = inst['status'] as InstallmentStatus;
-      await _firestore
-          .collection('gameyas')
-          .doc(gameyaId)
-          .collection('installments')
-          .doc(inst['id'] as String)
-          .set({
-        'id': inst['id'],
-        'gameyaId': gameyaId,
-        'memberShareId': inst['memberId'],
-        'monthNumber': 3,
-        'amount': inst['amount'],
-        'status': status.name,
-        'dueDate': DateTime(2026, 3, 5).toIso8601String(),
-        'paidAt': status == InstallmentStatus.paid ? DateTime.now().toIso8601String() : null,
-      });
+      for (final inst in installmentsData) {
+        final status = inst['status'] as InstallmentStatus;
+        await _firestore
+            .collection('gameyas')
+            .doc(gameyaId)
+            .collection('installments')
+            .doc(inst['id'] as String)
+            .set({
+          'id': inst['id'],
+          'gameyaId': gameyaId,
+          'memberShareId': inst['memberId'],
+          'monthNumber': 3,
+          'amount': inst['amount'],
+          'status': status.name,
+          'dueDate': DateTime(2026, 3, 5).toIso8601String(),
+          'paidAt': status == InstallmentStatus.paid ? DateTime.now().toIso8601String() : null,
+        });
+      }
+    } catch (e) {
+      // Catch permission-denied gracefully
     }
   }
 }
