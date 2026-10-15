@@ -30,6 +30,7 @@ class Gameya {
   final String currency;
   final int gracePeriodDays;
   final DateTime createdAt;
+  final DateTime? completedAt;
 
   Gameya({
     required this.id,
@@ -44,6 +45,7 @@ class Gameya {
     this.currency = 'EGP',
     this.gracePeriodDays = 7,
     required this.createdAt,
+    this.completedAt,
   });
 
   bool get isFinancialLocked => status == GameyaStatus.active || status == GameyaStatus.completed;
@@ -62,6 +64,7 @@ class Gameya {
       'currency': currency,
       'gracePeriodDays': gracePeriodDays,
       'createdAt': createdAt.toIso8601String(),
+      'completedAt': completedAt?.toIso8601String(),
     };
   }
 
@@ -82,6 +85,39 @@ class Gameya {
       currency: map['currency'] ?? 'EGP',
       gracePeriodDays: map['gracePeriodDays'] ?? 7,
       createdAt: _parseDate(map['createdAt']),
+      completedAt: map['completedAt'] != null ? _parseDate(map['completedAt']) : null,
+    );
+  }
+
+  Gameya copyWith({
+    String? id,
+    String? name,
+    String? organizerId,
+    double? totalPot,
+    double? monthlyShareInstallment,
+    int? totalMonths,
+    DateTime? startDate,
+    GameyaStatus? status,
+    String? inviteCode,
+    String? currency,
+    int? gracePeriodDays,
+    DateTime? createdAt,
+    DateTime? completedAt,
+  }) {
+    return Gameya(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      organizerId: organizerId ?? this.organizerId,
+      totalPot: totalPot ?? this.totalPot,
+      monthlyShareInstallment: monthlyShareInstallment ?? this.monthlyShareInstallment,
+      totalMonths: totalMonths ?? this.totalMonths,
+      startDate: startDate ?? this.startDate,
+      status: status ?? this.status,
+      inviteCode: inviteCode ?? this.inviteCode,
+      currency: currency ?? this.currency,
+      gracePeriodDays: gracePeriodDays ?? this.gracePeriodDays,
+      createdAt: createdAt ?? this.createdAt,
+      completedAt: completedAt ?? this.completedAt,
     );
   }
 }

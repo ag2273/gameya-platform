@@ -87,6 +87,7 @@ class Installment {
     DateTime? dueDate,
     bool clearPaidAt = false,
     bool clearVerifiedBy = false,
+    bool clearReceiptUrl = false,
   }) {
     return Installment(
       id: id ?? this.id,
@@ -95,7 +96,7 @@ class Installment {
       monthNumber: monthNumber ?? this.monthNumber,
       amount: amount ?? this.amount,
       status: status ?? this.status,
-      receiptUrl: receiptUrl ?? this.receiptUrl,
+      receiptUrl: clearReceiptUrl ? null : (receiptUrl ?? this.receiptUrl),
       paidAt: clearPaidAt ? null : (paidAt ?? this.paidAt),
       verifiedBy: clearVerifiedBy ? null : (verifiedBy ?? this.verifiedBy),
       dueDate: dueDate ?? this.dueDate,
