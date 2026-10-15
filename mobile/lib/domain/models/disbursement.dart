@@ -93,4 +93,30 @@ class Disbursement {
       confirmedAt: _parseNullableDate(map['confirmedAt']),
     );
   }
+
+  Disbursement copyWith({
+    String? id,
+    String? gameyaId,
+    int? monthNumber,
+    String? recipientMemberId,
+    double? amount,
+    DisbursementStatus? status,
+    String? paymentMethod,
+    DateTime? disbursedAt,
+    DateTime? autoConfirmDeadline,
+    DateTime? confirmedAt,
+  }) {
+    return Disbursement(
+      id: id ?? this.id,
+      gameyaId: gameyaId ?? this.gameyaId,
+      monthNumber: monthNumber ?? this.monthNumber,
+      recipientMemberId: recipientMemberId ?? this.recipientMemberId,
+      amount: amount ?? this.amount,
+      status: status ?? this.status,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      disbursedAt: disbursedAt ?? this.disbursedAt,
+      autoConfirmDeadline: autoConfirmDeadline ?? this.autoConfirmDeadline,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
+    );
+  }
 }
