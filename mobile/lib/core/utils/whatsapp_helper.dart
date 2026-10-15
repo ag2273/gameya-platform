@@ -1,5 +1,3 @@
-import 'package:url_launcher/url_launcher.dart';
-
 class WhatsAppHelper {
   /// Normalizes an Egyptian or international phone number for WhatsApp wa.me links.
   static String normalizePhone(String rawPhone) {
@@ -9,24 +7,19 @@ class WhatsAppHelper {
     }
     // Convert Egyptian local format (01xxxxxxxxx) to international format (201xxxxxxxxx)
     if (cleaned.startsWith('01') && cleaned.length == 11) {
-      cleaned = '20$cleaned';
+      cleaned = '20${cleaned.substring(1)}';
     }
     return cleaned;
   }
 
-  /// Opens WhatsApp with a pre-filled message using direct wa.me link.
-  static Future<bool> openWhatsApp({
+  /// Builds a direct wa.me URI for WhatsApp.
+  static Uri buildWhatsAppUri({
     required String phone,
     required String message,
-  }) async {
+  }) {
     final normalized = normalizePhone(phone);
     final encodedMessage = Uri.encodeComponent(message);
-    final url = Uri.parse('https://wa.me/$normalized?text=$encodedMessage');
-
-    if (await canLaunchUrl(url)) {
-      return await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
-    return false;
+    return Uri.parse('https://wa.me/$normalized?text=$encodedMessage');
   }
 
   /// Builds a personalized Arabic installment reminder message.
