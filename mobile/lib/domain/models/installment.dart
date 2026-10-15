@@ -85,6 +85,8 @@ class Installment {
     DateTime? paidAt,
     String? verifiedBy,
     DateTime? dueDate,
+    bool clearPaidAt = false,
+    bool clearVerifiedBy = false,
   }) {
     return Installment(
       id: id ?? this.id,
@@ -94,8 +96,8 @@ class Installment {
       amount: amount ?? this.amount,
       status: status ?? this.status,
       receiptUrl: receiptUrl ?? this.receiptUrl,
-      paidAt: paidAt ?? this.paidAt,
-      verifiedBy: verifiedBy ?? this.verifiedBy,
+      paidAt: clearPaidAt ? null : (paidAt ?? this.paidAt),
+      verifiedBy: clearVerifiedBy ? null : (verifiedBy ?? this.verifiedBy),
       dueDate: dueDate ?? this.dueDate,
     );
   }
