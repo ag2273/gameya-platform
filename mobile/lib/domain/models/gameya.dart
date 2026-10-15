@@ -1,11 +1,20 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 enum GameyaStatus {
   draft,
   recruiting,
   active,
   completed,
   cancelled,
+}
+
+DateTime _parseDate(dynamic val) {
+  if (val == null) return DateTime.now();
+  if (val is DateTime) return val;
+  if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
+  try {
+    return (val as dynamic).toDate();
+  } catch (_) {
+    return DateTime.now();
+  }
 }
 
 class Gameya {
@@ -47,12 +56,12 @@ class Gameya {
       'totalPot': totalPot,
       'monthlyShareInstallment': monthlyShareInstallment,
       'totalMonths': totalMonths,
-      'startDate': Timestamp.fromDate(startDate),
+      'startDate': startDate.toIso8601String(),
       'status': status.name,
       'inviteCode': inviteCode,
       'currency': currency,
       'gracePeriodDays': gracePeriodDays,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
@@ -64,7 +73,7 @@ class Gameya {
       totalPot: (map['totalPot'] as num?)?.toDouble() ?? 0.0,
       monthlyShareInstallment: (map['monthlyShareInstallment'] as num?)?.toDouble() ?? 0.0,
       totalMonths: map['totalMonths'] ?? 0,
-      startDate: (map['startDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      startDate: _parseDate(map['startDate']),
       status: GameyaStatus.values.firstWhere(
         (e) => e.name == map['status'],
         orElse: () => GameyaStatus.draft,
@@ -72,7 +81,7 @@ class Gameya {
       inviteCode: map['inviteCode'] ?? '',
       currency: map['currency'] ?? 'EGP',
       gracePeriodDays: map['gracePeriodDays'] ?? 7,
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: _parseDate(map['createdAt']),
     );
   }
 }
