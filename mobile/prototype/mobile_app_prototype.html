@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Gameya Mobile App — Clickable Prototype (Iteration 1)</title>
+  <title>منصة الجمعيات الذكية — النموذج التفاعلي الحقيقي (Realistic Mobile Prototype)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -17,8 +17,8 @@
       --accent-soft: #FEF3C7;
       --danger: #DC2626;
       --danger-soft: #FEE2E2;
-      --bg: #0B1320;
       --surface: #FFFFFF;
+      --bg: #0B1320;
       --card-bg: #F8FAFC;
       --text: #0F172A;
       --text-muted: #64748B;
@@ -34,51 +34,48 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       color: #f8fafc;
     }
 
-    /* Prototype Control Banner */
-    .proto-controls {
+    /* Top Prototype Control Bar */
+    .proto-bar {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
-      margin-bottom: 20px;
       background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
       padding: 8px 16px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.15);
+      margin-bottom: 16px;
       font-size: 13px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    .proto-pill {
-      background: var(--primary);
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 700;
-    }
+    .proto-tag { background: var(--primary); color: white; padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 11px; }
     .proto-btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: white;
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: 20px;
       cursor: pointer;
       font-weight: 600;
-      transition: background 0.2s;
+      font-size: 12px;
+      transition: all 0.2s;
     }
     .proto-btn:hover { background: rgba(255, 255, 255, 0.25); }
-    .proto-btn.active { background: var(--primary-light); color: #0f172a; }
+    .proto-btn.active { background: var(--primary-light); color: #0f172a; font-weight: 800; border-color: var(--primary-light); }
 
-    /* Phone Device Mockup Frame */
+    /* Phone Mockup Frame */
     .phone-chassis {
       width: 390px;
       height: 820px;
       background: #000000;
       border-radius: 54px;
       padding: 12px;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
       position: relative;
       display: flex;
       flex-direction: column;
@@ -96,25 +93,25 @@
       color: var(--text);
     }
 
-    /* Dynamic Island Notch */
+    /* Dynamic Island */
     .dynamic-island {
       position: absolute;
       top: 10px;
       left: 50%;
       transform: translateX(-50%);
       width: 120px;
-      height: 32px;
+      height: 30px;
       background: #000000;
       border-radius: 20px;
       z-index: 100;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 12px;
+      padding: 0 14px;
     }
-    .camera-lens { width: 10px; height: 10px; background: #1a1a1a; border-radius: 50%; }
+    .island-dot { width: 10px; height: 10px; background: #1a1a1a; border-radius: 50%; }
 
-    /* Phone Status Bar */
+    /* Status Bar */
     .status-bar {
       height: 48px;
       padding: 12px 24px 0 24px;
@@ -127,210 +124,203 @@
       z-index: 90;
       user-select: none;
     }
-    .status-icons { display: flex; gap: 6px; align-items: center; font-size: 11px; }
 
-    /* Content View Area */
-    .screen-content {
+    /* App Views / Screens Container */
+    .app-viewport {
       flex: 1;
       overflow-y: auto;
       padding-bottom: 80px;
       position: relative;
     }
 
-    /* Bottom Navigation Bar */
-    .bottom-nav {
+    /* Common Card & Layout Styles */
+    .app-nav-header {
+      padding: 12px 18px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .app-nav-header h2 { font-size: 16px; font-weight: 800; }
+    .card {
+      background: var(--surface);
+      margin: 12px 14px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Progress Bar */
+    .progress-bar-bg {
+      background: var(--border);
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 10px 0 6px;
+    }
+    .progress-bar-fill {
+      background: var(--primary);
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-success { background: #DCFCE7; color: #166534; }
+    .badge-warning { background: #FEF3C7; color: #92400E; }
+    .badge-info { background: #E0F2FE; color: #0369A1; }
+    .badge-danger { background: #FEE2E2; color: #991B1B; }
+
+    /* Action Buttons */
+    .btn-main {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-main:disabled { background: #CBD5E1; color: #64748B; cursor: not-allowed; }
+    .btn-sec { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
+
+    /* Member List Item */
+    .member-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .member-row:last-child { border-bottom: none; }
+    .member-meta h4 { font-size: 13px; font-weight: 700; }
+    .member-meta p { font-size: 11px; color: var(--text-muted); }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .icon-btn.wa { background: #25D366; color: white; border: none; }
+
+    /* Month Balancer Simulator for Creation Wizard */
+    .month-col-pill {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 10px;
+      text-align: center;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 11px;
+    }
+    .month-col-pill.ok { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; font-weight: 700; }
+    .month-col-pill.deficit { background: #FFFBEB; border-color: #FDE68A; color: #92400E; font-weight: 700; }
+    .month-col-pill.surplus { background: #FEF2F2; border-color: #FECACA; color: #991B1B; font-weight: 700; }
+
+    /* Bottom Nav Bar */
+    .phone-bottom-nav {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 72px;
+      height: 68px;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding-bottom: 12px;
-      z-index: 80;
+      padding-bottom: 10px;
+      z-index: 50;
     }
-    .nav-item {
+    .nav-tab {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       color: var(--text-muted);
       cursor: pointer;
       font-size: 11px;
       font-weight: 600;
-      transition: color 0.2s;
     }
-    .nav-item.active { color: var(--primary); }
-    .nav-icon { font-size: 20px; }
+    .nav-tab.active { color: var(--primary); font-weight: 800; }
 
-    /* Home Header */
-    .app-header {
-      padding: 12px 20px 16px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .user-greeting h2 { font-size: 17px; font-weight: 800; color: var(--text); }
-    .user-greeting p { font-size: 12px; color: var(--text-muted); }
-    .role-toggle-chip {
-      background: var(--primary-soft);
-      border: 1px solid var(--primary-light);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--primary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    /* Cards & Components */
-    .card {
-      background: var(--surface);
-      margin: 14px 16px;
-      padding: 16px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.03);
-    }
-    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-
-    /* Month Balancer Pill */
-    .balancer-pill {
-      background: var(--primary-soft);
-      border: 1px solid #A7F3D0;
-      padding: 10px 14px;
-      border-radius: 14px;
-      margin: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 12px;
-      color: var(--primary-dark);
-      font-weight: 600;
-    }
-
-    /* Metric Tiles */
-    .metric-row { display: flex; gap: 10px; margin: 0 16px; }
-    .metric-tile {
-      flex: 1;
-      background: var(--surface);
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-    }
-    .metric-label { font-size: 11px; color: var(--text-muted); }
-    .metric-val { font-size: 18px; font-weight: 800; color: var(--text); margin-top: 2px; }
-    .metric-sub { font-size: 10px; font-weight: 700; margin-top: 2px; }
-
-    /* Action Buttons */
-    .btn-action {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 10px;
-      transition: opacity 0.2s;
-    }
-    .btn-action:active { opacity: 0.8; }
-    .btn-secondary {
-      background: var(--card-bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    /* Member List Rows */
-    .member-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .member-item:last-child { border-bottom: none; }
-    .member-info h4 { font-size: 13px; font-weight: 700; }
-    .member-info p { font-size: 11px; color: var(--text-muted); }
-    .status-badge {
-      padding: 3px 8px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .badge-paid { background: #DCFCE7; color: #166534; }
-    .badge-review { background: #E0F2FE; color: #0369A1; }
-    .badge-pending { background: #FEF3C7; color: #92400E; }
-    .badge-overdue { background: #FEE2E2; color: #991B1B; }
-
-    .wa-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #25D366;
-      color: white;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    /* Modal Action Sheets */
-    .sheet-overlay {
+    /* Action Modal Sheet */
+    .modal-sheet {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.55);
       z-index: 200;
       display: none;
       align-items: flex-end;
     }
-    .sheet-content {
+    .modal-sheet-inner {
       background: white;
       width: 100%;
-      border-radius: 28px 28px 0 0;
+      border-radius: 26px 26px 0 0;
       padding: 20px;
       max-height: 85%;
       overflow-y: auto;
-      animation: slideUp 0.25s ease-out;
+      animation: sheetUp 0.25s ease-out;
     }
-    @keyframes slideUp {
+    @keyframes sheetUp {
       from { transform: translateY(100%); }
       to { transform: translateY(0); }
     }
-    .sheet-handle {
-      width: 40px;
+    .modal-handle {
+      width: 36px;
       height: 4px;
       background: #CBD5E1;
       border-radius: 2px;
-      margin: 0 auto 16px;
+      margin: 0 auto 14px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Prototype Switcher Banner -->
-  <div class="proto-controls">
-    <span class="proto-pill">النسخة التجريبية الملموسة #1</span>
-    <span>اختر الدور:</span>
-    <button class="proto-btn active" id="btnOrg" onclick="setRole('organizer')">المنظم (أدمن)</button>
-    <button class="proto-btn" id="btnMem" onclick="setRole('member')">المشترك (أحمد)</button>
+  <!-- Prototype Scenario Switcher -->
+  <div class="proto-bar">
+    <span class="proto-tag">السيناريوهات التفاعلية</span>
+    <button class="proto-btn active" id="btnScene1" onclick="switchScene('organizer_active')">1. لوحة المنظم (جمعية نشطة وتجميع قسط)</button>
+    <button class="proto-btn" id="btnScene2" onclick="switchScene('member_portal')">2. بوابة المشترك (شاشة المشترك الخاصة)</button>
+    <button class="proto-btn" id="btnScene3" onclick="switchScene('wizard_create')">3. معالج إنشاء جمعية + مؤشر الحماية الرياضية</button>
   </div>
 
   <!-- Mobile Phone Chassis -->
@@ -339,218 +329,395 @@
       <!-- Dynamic Island Notch -->
       <div class="dynamic-island">
         <span style="color: #10B981; font-size: 9px; font-weight: bold;">Gameya</span>
-        <div class="camera-lens"></div>
+        <div class="island-dot"></div>
       </div>
 
       <!-- Phone Status Bar -->
       <div class="status-bar">
-        <span id="phoneTime">9:41</span>
-        <div class="status-icons">
+        <span id="clockDisplay">09:41</span>
+        <div style="display: flex; gap: 6px; font-size: 11px;">
           <span>5G</span>
           <span>📶</span>
-          <span>🔋 98%</span>
+          <span>🔋 100%</span>
         </div>
       </div>
 
-      <!-- App Header -->
-      <div class="app-header">
-        <div class="user-greeting">
-          <p id="roleSubtext">مرحباً بك، المنظم</p>
-          <h2 id="roleGreeting">محمد أحمد 👋</h2>
-        </div>
-        <div class="role-toggle-chip" onclick="toggleRole()">
-          <span id="roleChipIcon">👑</span>
-          <span id="roleChipText">المنظم</span>
-        </div>
-      </div>
+      <!-- Main Scrollable App Viewport -->
+      <div class="app-viewport" id="viewport">
 
-      <!-- Scrollable Main Screen Content -->
-      <div class="screen-content" id="screenBody">
+        <!-- ============================================== -->
+        <!-- VIEW 1: ORGANIZER DASHBOARD (ACTIVE GAMEYA)   -->
+        <!-- ============================================== -->
+        <div id="viewOrganizer" style="display: block;">
+          <div class="app-nav-header">
+            <div>
+              <p style="font-size: 11px; color: var(--text-muted);">المنظم • حساب إدارة</p>
+              <h2>محمد أحمد (الأدمن)</h2>
+            </div>
+            <span class="badge badge-success">جمعية نشطة</span>
+          </div>
 
-        <!-- Live Month Balancer Bar -->
-        <div class="balancer-pill" id="balancerBar">
-          <span style="font-size: 18px;">🛡️</span>
-          <div>
-            <div style="font-weight: 700;">الحماية الرياضية: 100% متزنة</div>
-            <div style="font-size: 10px; color: var(--text-muted);">جميع الشهور (1-10) موزونة بدون أي عجز مالي</div>
+          <!-- Active Gameya Summary Card -->
+          <div class="card">
+            <div class="card-title">
+              <span>جمعية العائلة الكبرى (10 شهور)</span>
+              <span>شهر 3 من 10</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;">
+              <div>
+                <p style="font-size: 11px; color: var(--text-muted);">إجمالي الجمعية</p>
+                <div style="font-size: 20px; font-weight: 800; color: var(--primary);">50,000 ج.م</div>
+              </div>
+              <div style="text-align: left;">
+                <p style="font-size: 11px; color: var(--text-muted);">القسط الشهري للسهم</p>
+                <div style="font-size: 15px; font-weight: 700;">5,000 ج.م</div>
+              </div>
+            </div>
+
+            <!-- Month Collection Progress -->
+            <div style="margin-top: 14px; background: var(--card-bg); padding: 12px; border-radius: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                <span>المحصل لقسط شهر 3:</span>
+                <strong id="orgCollectedText">35,000 / 50,000 ج.م</strong>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="orgProgressBar" style="width: 70%;"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                <span id="orgPaidCountText">3 من 5 حصص مسددة</span>
+                <span id="orgRemainingText" style="color: var(--accent); font-weight: 700;">متبقي 15,000 ج.م</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Month Payout Beneficiary Card & Delivery Lock -->
+          <div class="card" style="border: 1.5px solid #CCFBF1;">
+            <div class="card-title">
+              <span style="color: var(--primary);">🎁 مستحق القبض لشهر 3</span>
+              <span class="badge" id="payoutStatusBadge" style="background: #FEF3C7; color: #92400E;">في انتظار اكتمال الصندوق</span>
+            </div>
+            <div style="font-size: 16px; font-weight: 800;">أحمد محمود (سهم كامل)</div>
+            <p style="font-size: 12px; color: var(--text-muted);">مبلغ القبض المستحق: <strong>50,000 ج.م</strong></p>
+
+            <!-- Disburse Button: LOCKED until 100% is collected! -->
+            <div style="margin-top: 12px;">
+              <button class="btn-main" id="btnDisbursePayout" disabled onclick="handleDisburseClick()">
+                <span id="disburseBtnIcon">🔒</span>
+                <span id="disburseBtnText">تسليم الصندوق (مقفل لحين اكتمال الـ 50,000)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Monthly Installment Tracking by Organizer -->
+          <div class="card">
+            <div class="card-title">
+              <span>تحصيل أقساط شهر 3</span>
+              <span style="color: var(--primary); cursor: pointer; font-size: 11px;" onclick="openBroadcastModal()">📢 تقرير الجروب</span>
+            </div>
+
+            <!-- Member 1: Paid -->
+            <div class="member-row">
+              <div class="member-meta">
+                <h4>سارة إبراهيم (سهم كامل)</h4>
+                <p>قسط: 5,000 ج.م • مسدد عبر إنستاباي</p>
+              </div>
+              <span class="badge badge-success">تم السداد ✔</span>
+            </div>
+
+            <!-- Member 2: Uploaded Receipt Under Review -->
+            <div class="member-row" id="rowMohamed">
+              <div class="member-meta">
+                <h4>محمد عبد الله (نصف سهم 50%)</h4>
+                <p>قسط: 2,500 ج.م • رفع إيصال تحويل</p>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;" id="actionsMohamed">
+                <span class="badge badge-info">إيصال للمراجعة</span>
+                <button class="icon-btn" onclick="openReviewReceiptSheet('محمد عبد الله', 2500, 'IPN-99482104')" title="معاينة الإيصال">🔍</button>
+              </div>
+            </div>
+
+            <!-- Member 3: Pending/Late -> WhatsApp Reminder -->
+            <div class="member-row" id="rowKarim">
+              <div class="member-meta">
+                <h4>كريم حسن (نصف سهم 50%)</h4>
+                <p id="karimSub">قسط: 2,500 ج.م • في الانتظار (سماح متبقي 3 أيام)</p>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;" id="actionsKarim">
+                <span class="badge badge-warning" id="karimBadge">متبقي</span>
+                <button class="icon-btn wa" onclick="sendWhatsAppReminder('كريم حسن', '01099998888', 2500)" title="تذكير واتساب">💬</button>
+                <button class="icon-btn" onclick="markKarimPaidManually()" title="تسجيل كمدفوع نقداً">✔</button>
+              </div>
+            </div>
+
+            <!-- Member 4: Tariq (Pending 5,000) -->
+            <div class="member-row" id="rowTariq">
+              <div class="member-meta">
+                <h4>طارq علي (سهم كامل)</h4>
+                <p id="tariqSub">قسط: 5,000 ج.م • لم يسدد بعد</p>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;" id="actionsTariq">
+                <span class="badge badge-warning" id="tariqBadge">متبقي</span>
+                <button class="icon-btn wa" onclick="sendWhatsAppReminder('طارق علي', '01011223344', 5000)" title="تذكير واتساب">💬</button>
+                <button class="icon-btn" onclick="markTariqPaidManually()" title="تسجيل كمدفوع نقداً">✔</button>
+              </div>
+            </div>
+
+            <!-- Member 5: Mona (Paid 50%) -->
+            <div class="member-row">
+              <div class="member-meta">
+                <h4>منى فريد (نصف سهم 50%)</h4>
+                <p>قسط: 2,500 ج.م • مسدد نقداً</p>
+              </div>
+              <span class="badge badge-success">تم السداد ✔</span>
+            </div>
           </div>
         </div>
 
-        <!-- Metric KPI Tiles -->
-        <div class="metric-row">
-          <div class="metric-tile">
-            <div class="metric-label">إجمالي الصندوق</div>
-            <div class="metric-val">50,000</div>
-            <div class="metric-sub" style="color: var(--primary);">5,000 ج.م شهرياً</div>
+        <!-- ============================================== -->
+        <!-- VIEW 2: MEMBER PORTAL (PRIVATE SUBSCRIBER VIEW)-->
+        <!-- ============================================== -->
+        <div id="viewMember" style="display: none;">
+          <div class="app-nav-header">
+            <div>
+              <p style="font-size: 11px; color: var(--text-muted);">بوابة المشترك الخاصة</p>
+              <h2>أحمد محمود</h2>
+            </div>
+            <span class="badge badge-info">مشترك</span>
           </div>
-          <div class="metric-tile">
-            <div class="metric-label">الشهر الحالي</div>
-            <div class="metric-val">شهر 3 <span style="font-size: 12px; color: var(--text-muted);">من 10</span></div>
-            <div class="metric-sub" style="color: var(--accent);">سماح متبقي: 4 أيام</div>
-          </div>
-        </div>
 
-        <!-- Current Month Beneficiary Spotlight Card -->
-        <div class="card" style="border: 2px solid #CCFBF1;">
-          <div class="card-title">
-            <span style="color: var(--primary); display: flex; align-items: center; gap: 6px;">
-              <span>🎁</span> مستفيد الشهر الحالي (شهر 3)
-            </span>
-            <span class="status-badge badge-review" id="disburseBadge">في انتظار التحصيل</span>
+          <!-- Member Personal Position Card -->
+          <div class="card" style="background: linear-gradient(135deg, #0F766E, #14B8A6); color: white; border: none;">
+            <p style="font-size: 11px; opacity: 0.9;">جمعية العائلة الكبرى</p>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;">
+              <div>
+                <p style="font-size: 11px; opacity: 0.8;">إجمالي الجمعية</p>
+                <div style="font-size: 22px; font-weight: 800;">50,000 ج.م</div>
+              </div>
+              <div style="text-align: left;">
+                <p style="font-size: 11px; opacity: 0.8;">حصتك بالسهم</p>
+                <div style="font-size: 16px; font-weight: 700;">سهم كامل (100%)</div>
+              </div>
+            </div>
+
+            <div style="margin-top: 14px; background: rgba(255, 255, 255, 0.15); padding: 10px 14px; border-radius: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>شهر قبضك المحدد:</span>
+                <strong style="font-size: 14px; color: #FEF08A;">شهر 3 (الشهر الحالي! 🎉)</strong>
+              </div>
+              <div style="font-size: 11px; opacity: 0.9; margin-top: 2px;">
+                مبلغ القبض المستحق لك: <strong>50,000 ج.م</strong>
+              </div>
+            </div>
           </div>
-          <div style="font-size: 15px; font-weight: 800;">أحمد محمود (سهم كامل)</div>
-          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">القيمة الإجمالية للقبض: <strong>50,000 ج.م</strong></p>
-          
-          <div id="organizerDisburseBtn" style="margin-top: 10px;">
-            <button class="btn-action" onclick="openDisburseModal()">
-              <span>💸</span> تسليم الصندوق للمستفيد
+
+          <!-- Member Current Month Installment Status -->
+          <div class="card">
+            <div class="card-title">
+              <span>قسط شهر 3 المطلوب منك</span>
+              <span class="badge badge-success" id="memMonth3Badge">مسدد بالكامل ✔</span>
+            </div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--text);">5,000 ج.م</div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">تم اعتماد التحويل عبر إنستاباي بنجاح.</p>
+          </div>
+
+          <!-- Member Payment Statement History -->
+          <div class="card">
+            <div class="card-title">
+              <span>سجل أقساطك الشخصية</span>
+              <span style="font-size: 11px; color: var(--primary);">تصدير كشف حسابي</span>
+            </div>
+
+            <div class="member-row">
+              <div>
+                <h4>قسط شهر 1</h4>
+                <p>مبلغ: 5,000 ج.م • 1 أكتوبر 2026</p>
+              </div>
+              <span class="badge badge-success">مدفوع ✔</span>
+            </div>
+
+            <div class="member-row">
+              <div>
+                <h4>قسط شهر 2</h4>
+                <p>مبلغ: 5,000 ج.م • 1 نوفمبر 2026</p>
+              </div>
+              <span class="badge badge-success">مدفوع ✔</span>
+            </div>
+
+            <div class="member-row">
+              <div>
+                <h4>قسط شهر 3 (الحالي)</h4>
+                <p>مبلغ: 5,000 ج.م • مستحق الآن</p>
+              </div>
+              <span class="badge badge-success">مدفوع ✔</span>
+            </div>
+
+            <div class="member-row">
+              <div>
+                <h4>قسط شهر 4 (القادم)</h4>
+                <p>مبلغ: 5,000 ج.م • 1 يناير 2027</p>
+              </div>
+              <span class="badge" style="background: #F1F5F9; color: #64748B;">لم يبدأ بعد</span>
+            </div>
+          </div>
+
+          <!-- Contact Organizer Button (Zero other members' private info exposed) -->
+          <div style="padding: 0 14px;">
+            <button class="btn-main btn-sec" onclick="contactOrganizer()">
+              <span>💬</span> تواصل مباشر مع المنظم (محمد أحمد) عبر واتساب
             </button>
           </div>
         </div>
 
-        <!-- Installments & Members List Card -->
-        <div class="card">
-          <div class="card-title">
-            <span id="listTitle">متابعة أقساط شهر 3 (35,000 / 50,000 ج.م)</span>
-            <span style="font-size: 12px; color: var(--primary); cursor: pointer;" onclick="openBroadcastModal()">نسخ للجروب</span>
+        <!-- ============================================== -->
+        <!-- VIEW 3: GAMEYA CREATION WIZARD & MONTH BALANCER-->
+        <!-- ============================================== -->
+        <div id="viewWizard" style="display: none;">
+          <div class="app-nav-header">
+            <div>
+              <p style="font-size: 11px; color: var(--text-muted);">معالج الإنشاء (المنظم)</p>
+              <h2>إنشاء جمعية جديدة</h2>
+            </div>
+            <span class="badge badge-warning">خطوة 2: توزيع الأسهم</span>
           </div>
 
-          <!-- Member Item 1 -->
-          <div class="member-item">
-            <div class="member-info">
-              <h4>سارة إبراهيم (سهم كامل)</h4>
-              <p>قسط: 5,000 ج.م • مسجل عبر إنستاباي</p>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="status-badge badge-paid">تم السداد ✔</span>
-            </div>
-          </div>
-
-          <!-- Member Item 2 -->
-          <div class="member-item">
-            <div class="member-info">
-              <h4>محمد عبد الله (نصف سهم 50%)</h4>
-              <p>قسط: 2,500 ج.م • إيصال قيد الفحص</p>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="status-badge badge-review" id="reviewBadge">فحص الإيصال</span>
-              <button class="wa-btn" onclick="openReviewModal()" title="فحص الإيصال">🔍</button>
+          <!-- Step 1 Summary -->
+          <div class="card" style="padding: 12px 16px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span><strong>جمعية الأصدقاء (4 شهور)</strong></span>
+              <span>إجمالي الجمعية: <strong>40,000 ج.م</strong></span>
             </div>
           </div>
 
-          <!-- Member Item 3 -->
-          <div class="member-item">
-            <div class="member-info">
-              <h4>كريم حسن (نصف سهم 50%)</h4>
-              <p>قسط: 2,500 ج.م • لم يسدد بعد</p>
+          <!-- Math Protection / Live Month Balancer (ONLY in Setup Flow!) -->
+          <div class="card" style="border: 2px solid #F59E0B; background: #FFFDF5;">
+            <div class="card-title">
+              <span style="color: #B45309; font-weight: 800;">⚖️ مؤشر الحماية الرياضية للشهور</span>
+              <span class="badge" id="wizardBalancerBadge" style="background: #FEE2E2; color: #991B1B;">عجز في شهر 2</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="status-badge badge-pending">في الانتظار</span>
-              <button class="wa-btn" onclick="launchWhatsApp('كريم حسن', '2500')" title="إرسال تذكير واتساب">💬</button>
-            </div>
-          </div>
-        </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
+              يشترط اكتمال كل شهر بنسبة 100% بالضبط من قيمة القبض (10,000 ج.م) قبل السماح بالتفعيل.
+            </p>
 
-        <!-- Member Specific Actions Card (Visible when in Member mode) -->
-        <div class="card" id="memberActionsCard" style="display: none; background: #F0FDF4; border: 1px solid #BBF7D0;">
-          <div class="card-title">
-            <span style="color: #166534;">حسابك في الجمعية</span>
-            <span class="status-badge badge-paid">سهم كامل (100%)</span>
+            <div style="display: flex; gap: 6px;" id="wizardBars">
+              <div class="month-col-pill ok">
+                <div>شهر 1</div>
+                <div>100%</div>
+                <div style="font-size: 9px;">متزن ✔</div>
+              </div>
+              <div class="month-col-pill deficit" id="barM2">
+                <div>شهر 2</div>
+                <div id="barM2Val">50%</div>
+                <div style="font-size: 9px;" id="barM2Sub">عجز 50%</div>
+              </div>
+              <div class="month-col-pill ok" id="barM3">
+                <div>شهر 3</div>
+                <div>100%</div>
+                <div style="font-size: 9px;">متزن ✔</div>
+              </div>
+              <div class="month-col-pill surplus" id="barM4">
+                <div>شهر 4</div>
+                <div id="barM4Val">150%</div>
+                <div style="font-size: 9px;" id="barM4Sub">فائض 50%</div>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 11px; color: var(--danger); font-weight: 700;" id="wizardErrorMsg">
+              ⚠️ لا يمكن تفعيل الجمعية: شهر 2 به عجز وشهر 4 به فائض. يرجى موازنة الأسهم المقسمة.
+            </div>
           </div>
-          <p style="font-size: 12px; color: #166534; margin-bottom: 8px;">
-            شهر قبضك المحدد: <strong>شهر 3 (الشهر الحالي 🎉)</strong><br/>
-            القسط الشهري المطلوب: <strong>5,000 ج.م</strong>
-          </p>
-          <button class="btn-action" style="background: #16A34A;" onclick="openUploadSheet()">
-            <span>📷</span> رفع إيصال تحويل إنستاباي
-          </button>
+
+          <!-- Interactive Share Assignment Simulator -->
+          <div class="card">
+            <div class="card-title">
+              <span>الأسهم المقسمة قيد التوزيع</span>
+            </div>
+
+            <div class="member-row">
+              <div>
+                <h4>سهم #2 (مقسم بين شريكين)</h4>
+                <p>الشريك الأول: كريم (50%) • شهر 2</p>
+                <p>الشريك الثاني: هاني (50%) • حالياً مخصص في: <strong id="haniMonthText" style="color: var(--danger);">شهر 4</strong></p>
+              </div>
+              <button class="proto-btn" style="background: var(--primary); color: white;" onclick="fixHaniMonth()">
+                نقل هاني لشهر 2 (موازنة الحسابات)
+              </button>
+            </div>
+          </div>
+
+          <!-- Final Activation Button (Hard Gate) -->
+          <div style="padding: 0 14px;">
+            <button class="btn-main" id="btnActivateWizard" disabled onclick="activateWizardGameya()">
+              <span>🔒</span> تفعيل الجمعية وقفل الشروط المالية
+            </button>
+          </div>
         </div>
 
       </div>
 
       <!-- Bottom Phone Navigation -->
-      <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchNav('home')">
-          <span class="nav-icon">🏠</span>
+      <div class="phone-bottom-nav">
+        <div class="nav-tab active" onclick="switchNav('home')">
+          <span style="font-size: 18px;">🏠</span>
           <span>الرئيسية</span>
         </div>
-        <div class="nav-item" onclick="switchNav('gameyas')">
-          <span class="nav-icon">📊</span>
+        <div class="nav-tab" onclick="switchNav('gameyas')">
+          <span style="font-size: 18px;">📊</span>
           <span>جمعياتي</span>
         </div>
-        <div class="nav-item" onclick="switchNav('notifications')">
-          <span class="nav-icon">🔔</span>
+        <div class="nav-tab" onclick="switchNav('alerts')">
+          <span style="font-size: 18px;">🔔</span>
           <span>التنبيهات</span>
         </div>
-        <div class="nav-item" onclick="switchNav('profile')">
-          <span class="nav-icon">👤</span>
+        <div class="nav-tab" onclick="switchNav('profile')">
+          <span style="font-size: 18px;">👤</span>
           <span>حسابي</span>
         </div>
       </div>
 
-      <!-- Action Sheet Modal: WhatsApp Group Broadcast -->
-      <div class="sheet-overlay" id="broadcastSheet">
-        <div class="sheet-content">
-          <div class="sheet-handle"></div>
-          <h3 style="font-size: 16px; margin-bottom: 8px;">تقرير متابعة جروب الواتساب</h3>
-          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">رسالة جاهزة تم تنسيقها لتشاركها بضغطة زر في جروب الجمعية:</p>
-          <div style="background: var(--card-bg); padding: 12px; border-radius: 12px; font-size: 12px; line-height: 1.6; border: 1px solid var(--border);">
-            📢 *تقرير متابعة جمعية العائلة الكبرى*<br/>
-            📅 *الشهر:* شهر 3 من 10<br/>
-            🌟 *المستفيد الحالي:* أحمد محمود (50,000 ج.م)<br/>
-            ✅ *المحصل حتى الآن:* 35,000 من 50,000 ج.م<br/>
-            ⏳ *المتبقي سدادهم:* كريم حسن (2,500 ج.م)<br/>
-            ------------------------------------<br/>
-            شكراً لالتزامكم وبارك الله للجميع! 🙏
-          </div>
-          <button class="btn-action" style="margin-top: 14px; background: #25D366;" onclick="copyAndCloseBroadcast()">
-            <span>📋</span> نسخ التقرير وفتح الواتساب
-          </button>
-          <button class="btn-action btn-secondary" onclick="closeSheet('broadcastSheet')">إغلاق</button>
-        </div>
-      </div>
+      <!-- Action Sheet: Receipt Verification Inspector -->
+      <div class="modal-sheet" id="sheetReceiptReview">
+        <div class="modal-sheet-inner">
+          <div class="modal-handle"></div>
+          <h3 style="font-size: 15px; margin-bottom: 2px;">مراجعة إيصال التحويل الرقمي</h3>
+          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;" id="receiptSheetSub">المشترك: محمد عبد الله • قسط 2,500 ج.م</p>
 
-      <!-- Action Sheet Modal: Receipt Inspector -->
-      <div class="sheet-overlay" id="reviewSheet">
-        <div class="sheet-content">
-          <div class="sheet-handle"></div>
-          <h3 style="font-size: 16px; margin-bottom: 4px;">فحص إيصال التحويل (إنستاباي)</h3>
-          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">المشترك: محمد عبد الله • المبلغ: 2,500 ج.م</p>
-          
-          <div style="background: #E2E8F0; height: 160px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px;">
-            <span style="font-size: 32px;">🧾</span>
-            <span>صورة إيصال إنستاباي مضغوطة (120 KB)</span>
-            <span style="font-size: 10px; color: #0284C7; margin-top: 4px;">رقم العملية: IPN-8839201948</span>
+          <div style="background: #E2E8F0; height: 160px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--border);">
+            <span style="font-size: 38px;">🧾</span>
+            <span style="font-size: 12px; font-weight: 700; margin-top: 6px;">إيصال تحويل إنستاباي معتمد</span>
+            <span style="font-size: 10px; color: #0284C7;" id="receiptSheetRef">رقم المرجع: IPN-99482104</span>
+            <span style="font-size: 9px; color: var(--text-muted); margin-top: 2px;">تم الضغط تلقائياً: 118 KB (JPEG)</span>
           </div>
 
           <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn-action" onclick="confirmApproveReceipt()">
-              <span>✔</span> اعتماد السداد فوراً
+            <button class="btn-main" onclick="approveMohamedReceipt()">
+              <span>✔</span> اعتماد السداد وإضافة 2,500 للصندوق
             </button>
-            <button class="btn-action" style="background: #FEE2E2; color: #DC2626;" onclick="closeSheet('reviewSheet')">
-              <span>✖</span> رفض
+            <button class="btn-main btn-sec" style="color: var(--danger);" onclick="closeSheet('sheetReceiptReview')">
+              رفض
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Action Sheet Modal: Upload Receipt (Member) -->
-      <div class="sheet-overlay" id="uploadSheet">
-        <div class="sheet-content">
-          <div class="sheet-handle"></div>
-          <h3 style="font-size: 16px; margin-bottom: 4px;">رفع إثبات التحويل</h3>
-          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">ارفع لقطة شاشة لتحويل إنستاباي أو فودافون كاش لقسط شهر 3 (5,000 ج.م):</p>
-          
-          <div style="border: 2px dashed #94A3B8; border-radius: 16px; padding: 24px; text-align: center; cursor: pointer; background: var(--card-bg);" onclick="simulatePickImage()">
-            <span style="font-size: 36px;">📸</span>
-            <div style="font-size: 13px; font-weight: 700; margin-top: 6px;">اضغط لاختيار صورة الإيصال</div>
-            <div style="font-size: 10px; color: var(--text-muted);">يتم ضغط الصورة تلقائياً لأقل من 150KB لتوفير المساحة مجاناً</div>
+      <!-- Action Sheet: WhatsApp Group Broadcast -->
+      <div class="modal-sheet" id="sheetBroadcast">
+        <div class="modal-sheet-inner">
+          <div class="modal-handle"></div>
+          <h3 style="font-size: 15px; margin-bottom: 4px;">📢 رسالة تقرير جروب الواتساب</h3>
+          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">رسالة تلخيصية منسقة للنسخ المباشر في جروب الجمعية:</p>
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 12px; font-size: 11px; line-height: 1.6; border: 1px solid var(--border);" id="broadcastTextPreview">
+            📢 *تقرير متابعة جمعية العائلة الكبرى*<br/>
+            📅 *الشهر:* شهر 3 من 10<br/>
+            🌟 *المستفيد من القبض:* أحمد محمود (50,000 ج.م)<br/>
+            ✅ *المحصل حتى الآن:* <span id="bcCollected">35,000</span> من 50,000 ج.م<br/>
+            ⏳ *المتبقي سدادهم:* كريم حسن وطارق علي<br/>
+            ------------------------------------<br/>
+            شكراً لالتزامكم وبارك الله للجميع! 🙏
           </div>
-
-          <button class="btn-action" style="margin-top: 16px;" onclick="submitUploadedReceipt()">
-            <span>🚀</span> إرسال الإيصال للمنظم
+          <button class="btn-main" style="margin-top: 14px; background: #25D366;" onclick="copyBroadcast()">
+            <span>📋</span> نسخ التقرير لمشاركته في الواتساب
           </button>
-          <button class="btn-action btn-secondary" onclick="closeSheet('uploadSheet')">إلغاء</button>
+          <button class="btn-main btn-sec" style="margin-top: 8px;" onclick="closeSheet('sheetBroadcast')">إلغاء</button>
         </div>
       </div>
 
@@ -558,98 +725,175 @@
   </div>
 
   <script>
-    let currentRole = 'organizer';
+    // State of active running Gameya (Month 3)
+    let collectedAmount = 35000;
+    const totalPotAmount = 50000;
+    let paidCount = 3;
+    const totalSharesCount = 5;
 
-    function setRole(role) {
-      currentRole = role;
-      document.getElementById('btnOrg').classList.toggle('active', role === 'organizer');
-      document.getElementById('btnMem').classList.toggle('active', role === 'member');
-
-      if (role === 'organizer') {
-        document.getElementById('roleGreeting').textContent = 'محمد أحمد 👋';
-        document.getElementById('roleSubtext').textContent = 'مرحباً بك، المنظم';
-        document.getElementById('roleChipText').textContent = 'المنظم';
-        document.getElementById('roleChipIcon').textContent = '👑';
-        document.getElementById('organizerDisburseBtn').style.display = 'block';
-        document.getElementById('memberActionsCard').style.display = 'none';
+    function updateOrganizerProgress() {
+      document.getElementById('orgCollectedText').textContent = `${collectedAmount.toLocaleString()} / ${totalPotAmount.toLocaleString()} ج.م`;
+      const pct = Math.min(100, Math.round((collectedAmount / totalPotAmount) * 100));
+      document.getElementById('orgProgressBar').style.width = pct + '%';
+      document.getElementById('orgPaidCountText').textContent = `${paidCount} من ${totalSharesCount} حصص مسددة`;
+      
+      const rem = totalPotAmount - collectedAmount;
+      const remEl = document.getElementById('orgRemainingText');
+      if (rem > 0) {
+        remEl.textContent = `متبقي ${rem.toLocaleString()} ج.م`;
+        remEl.style.color = 'var(--accent)';
       } else {
-        document.getElementById('roleGreeting').textContent = 'أحمد محمود 👋';
-        document.getElementById('roleSubtext').textContent = 'مرحباً بك، مشترك الجمعية';
-        document.getElementById('roleChipText').textContent = 'مشترك';
-        document.getElementById('roleChipIcon').textContent = '👤';
-        document.getElementById('organizerDisburseBtn').style.display = 'none';
-        document.getElementById('memberActionsCard').style.display = 'block';
+        remEl.textContent = `اكتمل الصندوق 100% ✔`;
+        remEl.style.color = '#16A34A';
+      }
+
+      // Check delivery button lock state
+      const btn = document.getElementById('btnDisbursePayout');
+      const badge = document.getElementById('payoutStatusBadge');
+      if (collectedAmount >= totalPotAmount) {
+        btn.disabled = false;
+        btn.style.background = '#16A34A';
+        document.getElementById('disburseBtnIcon').textContent = '💸';
+        document.getElementById('disburseBtnText').textContent = 'تسليم الـ 50,000 ج.م للمستفيد (أحمد محمود)';
+        badge.className = 'badge badge-success';
+        badge.textContent = 'جاهز للتسليم الفوري ✔';
+      } else {
+        btn.disabled = true;
+        btn.style.background = '';
+        document.getElementById('disburseBtnIcon').textContent = '🔒';
+        document.getElementById('disburseBtnText').textContent = `تسليم الصندوق (مقفل: متبقي ${rem.toLocaleString()} ج.م)`;
+        badge.className = 'badge badge-warning';
+        badge.textContent = 'في انتظار اكتمال الصندوق';
       }
     }
 
-    function toggleRole() {
-      setRole(currentRole === 'organizer' ? 'member' : 'organizer');
+    function switchScene(scene) {
+      document.getElementById('btnScene1').classList.toggle('active', scene === 'organizer_active');
+      document.getElementById('btnScene2').classList.toggle('active', scene === 'member_portal');
+      document.getElementById('btnScene3').classList.toggle('active', scene === 'wizard_create');
+
+      document.getElementById('viewOrganizer').style.display = scene === 'organizer_active' ? 'block' : 'none';
+      document.getElementById('viewMember').style.display = scene === 'member_portal' ? 'block' : 'none';
+      document.getElementById('viewWizard').style.display = scene === 'wizard_create' ? 'block' : 'none';
     }
 
-    function launchWhatsApp(name, amount) {
-      const msg = encodeURIComponent(`السلام عليكم ${name}، نذكرك بموعد سداد قسط جمعية العائلة لشهر 3 بقيمة ${amount} ج.م. شاكرين تعاونكم الطيب! 🙏`);
-      window.open(`https://wa.me/201012345678?text=${msg}`, '_blank');
+    function openReviewReceiptSheet(name, amt, ref) {
+      document.getElementById('receiptSheetSub').textContent = `المشترك: ${name} • قسط ${amt.toLocaleString()} ج.م`;
+      document.getElementById('receiptSheetRef').textContent = `رقم المرجع: ${ref}`;
+      document.getElementById('sheetReceiptReview').style.display = 'flex';
+    }
+
+    function approveMohamedReceipt() {
+      // Mohamed pays 2,500
+      collectedAmount += 2500;
+      paidCount += 1;
+      document.getElementById('actionsMohamed').innerHTML = '<span class="badge badge-success">تم السداد ✔</span>';
+      closeSheet('sheetReceiptReview');
+      updateOrganizerProgress();
+      alert('تم اعتماد إيصال محمد عبد الله بنجاح! زاد رصيد الصندوق +2,500 ج.م.');
+    }
+
+    function markKarimPaidManually() {
+      // Karim pays 2,500
+      collectedAmount += 2500;
+      paidCount += 1;
+      document.getElementById('actionsKarim').innerHTML = '<span class="badge badge-success">تم السداد ✔</span>';
+      document.getElementById('karimSub').textContent = 'قسط: 2,500 ج.م • مسدد نقداً للأدمن';
+      updateOrganizerProgress();
+      alert('تم تسجيل قسط كريم حسن (2,500 ج.م) كمسدد نقداً.');
+    }
+
+    function markTariqPaidManually() {
+      // Tariq pays 5,000
+      collectedAmount += 5000;
+      paidCount += 1;
+      document.getElementById('actionsTariq').innerHTML = '<span class="badge badge-success">تم السداد ✔</span>';
+      document.getElementById('tariqSub').textContent = 'قسط: 5,000 ج.م • مسدد بالكامل';
+      updateOrganizerProgress();
+      alert('تم تسجيل قسط طارق علي (5,000 ج.م) كمسدد. لاحظ اكتمال الصندوق والآن فُتح زر التسليم للمستفيد!');
+    }
+
+    function sendWhatsAppReminder(name, phone, amount) {
+      const msg = encodeURIComponent(`السلام عليكم ${name}، نذكرك بموعد سداد قسط جمعية العائلة الكبرى لشهر 3 بقيمة ${amount} ج.م. شاكرين ومقدرين حسن تعاونكم الطيب! 🙏`);
+      window.open(`https://wa.me/20${phone.substring(1)}?text=${msg}`, '_blank');
+    }
+
+    function handleDisburseClick() {
+      if (confirm('تأكيد تسليم الصندوق المكتمل (50,000 ج.م) للمستفيد أحمد محمود؟\n\nسيبدأ عداد التأكيد التلقائي لمدة 48 ساعة للمستفيد.')) {
+        alert('🎉 تم تسليم مبلغ الصندوق بنجاح وتم إشعار أحمد محمود لتأكيد الاستلام خلال 48 ساعة!');
+        document.getElementById('payoutStatusBadge').textContent = 'تم التسليم (في انتظار تأكيد المستفيد)';
+        document.getElementById('btnDisbursePayout').disabled = true;
+      }
     }
 
     function openBroadcastModal() {
-      document.getElementById('broadcastSheet').style.display = 'flex';
+      document.getElementById('sheetBroadcast').style.display = 'flex';
+      document.getElementById('bcCollected').textContent = collectedAmount.toLocaleString();
     }
 
-    function copyAndCloseBroadcast() {
-      alert('تم نسخ تقرير الجمعية! سيتم الآن توجيهك للواتساب لمشاركته في الجروب.');
-      closeSheet('broadcastSheet');
+    function copyBroadcast() {
+      alert('تم نسخ تقرير المتابعة! يمكنك الآن لصقه مباشرة في جروب الواتساب.');
+      closeSheet('sheetBroadcast');
     }
 
-    function openReviewModal() {
-      document.getElementById('reviewSheet').style.display = 'flex';
-    }
-
-    function confirmApproveReceipt() {
-      const b = document.getElementById('reviewBadge');
-      b.className = 'status-badge badge-paid';
-      b.textContent = 'تم السداد ✔';
-      alert('تم اعتماد سداد المشترك محمد عبد الله وتحديث حسابه بنجاح!');
-      closeSheet('reviewSheet');
-    }
-
-    function openDisburseModal() {
-      if (confirm('تأكيد تسليم مبلغ الصندوق (50,000 ج.م) للمستفيد أحمد محمود؟\n\nسيبدأ عداد التأكيد التلقائي لمدة 48 ساعة للمستفيد.')) {
-        const badge = document.getElementById('disburseBadge');
-        badge.className = 'status-badge badge-paid';
-        badge.textContent = 'تم التسليم (في انتظار التأكيد)';
-        alert('تم تسجيل التسليم! المستفيد لديه 48 ساعة للتأكيد وسيتحول لتأكيد تلقائي.');
-      }
-    }
-
-    function openUploadSheet() {
-      document.getElementById('uploadSheet').style.display = 'flex';
-    }
-
-    function simulatePickImage() {
-      alert('تم اختيار لقطة شاشة التحويل وضغطها تلقائياً من 4.2 MB إلى 118 KB بجودة عالية.');
-    }
-
-    function submitUploadedReceipt() {
-      alert('تم رفع الإيصال بنجاح وإشعار المنظم لمراجعته واعتماده.');
-      closeSheet('uploadSheet');
+    function contactOrganizer() {
+      const msg = encodeURIComponent('السلام عليكم أخي محمد (منظم الجمعية)، كان لدي استفسار بخصوص موعد تسليم قبض شهر 3. شكراً لك!');
+      window.open(`https://wa.me/201012345678?text=${msg}`, '_blank');
     }
 
     function closeSheet(id) {
       document.getElementById(id).style.display = 'none';
     }
 
+    // Wizard Simulation Functions
+    let haniFixed = false;
+    function fixHaniMonth() {
+      if (!haniFixed) {
+        haniFixed = true;
+        document.getElementById('haniMonthText').textContent = 'شهر 2 ✔ (متزن)';
+        document.getElementById('haniMonthText').style.color = '#065F46';
+
+        // Update Balancer visual bars
+        const m2 = document.getElementById('barM2');
+        m2.className = 'month-col-pill ok';
+        document.getElementById('barM2Val').textContent = '100%';
+        document.getElementById('barM2Sub').textContent = 'متزن ✔';
+
+        const m4 = document.getElementById('barM4');
+        m4.className = 'month-col-pill ok';
+        document.getElementById('barM4Val').textContent = '100%';
+        document.getElementById('barM4Sub').textContent = 'متزن ✔';
+
+        document.getElementById('wizardBalancerBadge').className = 'badge badge-success';
+        document.getElementById('wizardBalancerBadge').textContent = 'جميع الشهور متزنة 100%';
+
+        document.getElementById('wizardErrorMsg').style.display = 'none';
+
+        const actBtn = document.getElementById('btnActivateWizard');
+        actBtn.disabled = false;
+        actBtn.innerHTML = '<span>🚀</span> تفعيل الجمعية وقفل الشروط المالية';
+      }
+    }
+
+    function activateWizardGameya() {
+      alert('🎉 مبروك! تحققت الحماية الرياضية من توازن جميع الشهور بنسبة 100%. تم تفعيل الجمعية وقفل الشروط المالية بنجاح.');
+      switchScene('organizer_active');
+    }
+
     function switchNav(tab) {
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
       event.currentTarget.classList.add('active');
     }
 
-    // Update phone status clock
+    // Update Clock
     function updateClock() {
       const now = new Date();
-      document.getElementById('phoneTime').textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      document.getElementById('clockDisplay').textContent = 
+        now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
     }
     setInterval(updateClock, 1000);
     updateClock();
+    updateOrganizerProgress();
   </script>
 </body>
 </html>
