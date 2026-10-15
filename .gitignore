@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database and SQLite
+*.db
+*.sqlite3
+
+# Logs
+*.log
+server.log
+server_output.log
+
+# Temporary test scripts
+test_render.py
+
+# Flutter & Dart build artifacts
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
