@@ -103,4 +103,38 @@ class ReceiptService {
       receiptUrl: storageUrl,
     );
   }
+
+  /// Approves a pending receipt with 1 tap: updates status to `paid` and records verifier UID.
+  static Installment approveReceipt({
+    required Installment installment,
+    required String organizerId,
+    DateTime? timestamp,
+  }) {
+    if (installment.status != InstallmentStatus.review && installment.status != InstallmentStatus.pending) {
+      throw StateError('Cannot approve installment in ${installment.status.name} status.');
+    }
+
+    return installment.copyWith(
+      status: InstallmentStatus.paid,
+      verifiedBy: organizerId,
+      paidAt: timestamp ?? DateTime.now(),
+    );
+  }
+
+  /// Rejects a submitted receipt and requests re-upload: reverts status to `pending`.
+  static Installment rejectReceipt({
+    required Installment installment,
+    required String reason,
+  }) {
+    return installment.copyWith(
+      status: InstallmentStatus.pending,
+      clearPaidAt: true,
+      clearVerifiedBy: true,
+    );
+  }
+
+  /// Counts the total number of installments currently pending organizer review.
+  static int countPendingReviews(List<Installment> installments) {
+    return installments.where((i) => i.status == InstallmentStatus.review).length;
+  }
 }
