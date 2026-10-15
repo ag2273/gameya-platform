@@ -4,7 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
+import 'data/services/firebase_auth_repository.dart';
+import 'features/auth/screens/auth_screen.dart';
 import 'features/gameya/screens/gameya_dashboard_screen.dart';
+import 'features/gameya/screens/member_portal_screen.dart';
+import 'features/gameya/providers/gameya_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,11 +57,13 @@ void main() async {
   );
 }
 
-class SmartGameyaApp extends StatelessWidget {
+class SmartGameyaApp extends ConsumerWidget {
   const SmartGameyaApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+
     return MaterialApp(
       title: 'منصة إدارة الجمعيات الذكية',
       debugShowCheckedModeBanner: false,
@@ -75,7 +81,12 @@ class SmartGameyaApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       
-      home: const GameyaDashboardScreen(),
+      // Real Role-Based Access Control Gate
+      home: user == null
+          ? const AuthScreen()
+          : user.role == UserRole.organizer
+              ? const GameyaDashboardScreen()
+              : const MemberPortalScreen(),
     );
   }
 }

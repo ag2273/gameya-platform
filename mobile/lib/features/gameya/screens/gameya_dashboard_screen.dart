@@ -7,7 +7,6 @@ import '../../../domain/models/installment.dart';
 import '../../../domain/models/member_share.dart';
 import '../providers/gameya_providers.dart';
 import 'creation_wizard_screen.dart';
-import 'member_portal_screen.dart';
 import 'turn_swap_screen.dart';
 import 'disbursement_screen.dart';
 import 'share_transfer_screen.dart';
@@ -186,24 +185,14 @@ class _GameyaDashboardScreenState extends ConsumerState<GameyaDashboardScreen> {
         appBar: AppBar(
           title: Text(gameyaName),
           actions: [
-            // Switch to Member Portal Pill
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const MemberPortalScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryLight.withOpacity(0.2),
-                  foregroundColor: AppTheme.primaryGreen,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                ),
-                icon: const Icon(Icons.person_outline, size: 18),
-                label: const Text('بوابة المشترك', style: TextStyle(fontSize: 12)),
-              ),
+            IconButton(
+              icon: const Icon(Icons.logout, color: AppTheme.errorRed),
+              tooltip: 'تسجيل الخروج',
+              onPressed: () async {
+                final auth = ref.read(authRepositoryProvider);
+                await auth.signOut();
+                ref.read(currentUserProvider.notifier).state = null;
+              },
             ),
           ],
         ),
@@ -224,7 +213,7 @@ class _GameyaDashboardScreenState extends ConsumerState<GameyaDashboardScreen> {
                     ),
                     const SizedBox(height: 10),
                     const Text('منصة إدارة الجمعيات الذكية', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('المنظم: أيمن جمعة (Firebase Live)', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
+                    Text('المنظم: ${ref.watch(currentUserProvider)?.displayName ?? "أيمن جمعة"}', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
                   ],
                 ),
               ),
@@ -236,18 +225,10 @@ class _GameyaDashboardScreenState extends ConsumerState<GameyaDashboardScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.calculate_outlined, color: AppTheme.primaryGreen),
-                title: const Text('إنشاء جمعية وميزان الشهور'),
+                title: const Text('إنشاء جمعية وتعيين المشتركين'),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CreationWizardScreen()));
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.person_pin_outlined, color: AppTheme.primaryGreen),
-                title: const Text('بوابة المشترك الخاصة'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MemberPortalScreen()));
                 },
               ),
               ListTile(
@@ -288,6 +269,17 @@ class _GameyaDashboardScreenState extends ConsumerState<GameyaDashboardScreen> {
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExportScreen(isOrganizer: true)));
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.logout, color: AppTheme.errorRed),
+                title: const Text('تسجيل الخروج', style: TextStyle(color: AppTheme.errorRed)),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final auth = ref.read(authRepositoryProvider);
+                  await auth.signOut();
+                  ref.read(currentUserProvider.notifier).state = null;
                 },
               ),
             ],

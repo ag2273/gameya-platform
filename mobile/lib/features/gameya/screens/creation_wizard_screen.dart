@@ -1,64 +1,201 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/whatsapp_helper.dart';
+import '../../../domain/models/gameya.dart';
+import '../../../domain/models/member_share.dart';
+import '../providers/gameya_providers.dart';
 
-class CreationWizardScreen extends StatefulWidget {
+class MemberSlot {
+  String name;
+  String phone;
+  double shareRatio; // 0.25, 0.5, 1.0
+  int payoutMonth;
+
+  MemberSlot({
+    required this.name,
+    required this.phone,
+    required this.shareRatio,
+    required this.payoutMonth,
+  });
+}
+
+class CreationWizardScreen extends ConsumerStatefulWidget {
   const CreationWizardScreen({super.key});
 
   @override
-  State<CreationWizardScreen> createState() => _CreationWizardScreenState();
+  ConsumerState<CreationWizardScreen> createState() => _CreationWizardScreenState();
 }
 
-class _CreationWizardScreenState extends State<CreationWizardScreen> {
+class _CreationWizardScreenState extends ConsumerState<CreationWizardScreen> {
   final _formKey = GlobalKey<FormState>();
-  
-  final _nameController = TextEditingController(text: 'جمعية الزملاء والأصدقاء');
-  final _totalPotController = TextEditingController(text: '100000');
-  int _totalMonths = 10;
-  int _gracePeriodDays = 7;
 
-  // Month allocations: month -> list of member shares (ratio)
-  late Map<int, double> _monthAllocations;
+  final _nameController = TextEditingController(text: 'جمعية العمل والأصدقاء');
+  final _totalPotController = TextEditingController(text: '50000');
+  int _totalMonths = 10;
+  bool _isSaving = false;
+
+  late List<List<MemberSlot>> _monthSlots;
 
   @override
   void initState() {
     super.initState();
-    _resetAllocations();
+    _initializeSlots();
   }
 
-  void _resetAllocations() {
-    _monthAllocations = {
-      for (int i = 1; i <= _totalMonths; i++) i: (i <= 8 ? 1.0 : (i == 9 ? 0.5 : 0.0)) // Month 9 has 50%, Month 10 has 0% by default to demonstrate balancer!
-    };
+  void _initializeSlots() {
+    _monthSlots = List.generate(
+      _totalMonths,
+      (idx) => [
+        MemberSlot(
+          name: '',
+          phone: '',
+          shareRatio: 1.0,
+          payoutMonth: idx + 1,
+        )
+      ],
+    );
   }
 
-  double get _totalPot => double.tryParse(_totalPotController.text) ?? 100000.0;
+  double get _totalPot => double.tryParse(_totalPotController.text) ?? 50000.0;
   double get _monthlyInstallment => _totalMonths > 0 ? _totalPot / _totalMonths : 0.0;
 
-  bool get _isBalanced {
-    return _monthAllocations.values.every((ratio) => (ratio - 1.0).abs() < 0.001);
+  bool get _isAllBalanced {
+    for (int m = 0; m < _totalMonths; m++) {
+      final sum = _monthSlots[m].fold(0.0, (acc, slot) => acc + slot.shareRatio);
+      if ((sum - 1.0).abs() > 0.001) return false;
+    }
+    return true;
   }
 
-  void _fillBalanced() {
+  bool get _hasValidNamesAndPhones {
+    for (int m = 0; m < _totalMonths; m++) {
+      for (final slot in _monthSlots[m]) {
+        if (slot.name.trim().isEmpty || slot.phone.trim().length < 9) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void _fillSampleRealMembers() {
     setState(() {
-      for (int i = 1; i <= _totalMonths; i++) {
-        _monthAllocations[i] = 1.0;
+      final sampleNames = [
+        'أحمد محمود', 'محمد عبد الله', 'كريم حسن', 'سارة إبراهيم', 'محمود عبد العزيز',
+        'منى الشاذلي', 'ياسر جلال', 'هاني شاكر', 'عمرو دياب', 'تامر حسني'
+      ];
+      final samplePhones = [
+        '01011111111', '01022222222', '01033333333', '01044444444', '01055555555',
+        '01066666666', '01077777777', '01088888888', '01099999999', '01000000000'
+      ];
+
+      for (int m = 0; m < _totalMonths; m++) {
+        _monthSlots[m] = [
+          MemberSlot(
+            name: sampleNames[m % sampleNames.length],
+            phone: samplePhones[m % samplePhones.length],
+            shareRatio: 1.0,
+            payoutMonth: m + 1,
+          )
+        ];
       }
     });
   }
 
+  Future<void> _saveAndActivateGameya() async {
+    if (!_isAllBalanced || !_hasValidNamesAndPhones) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('برجاء استكمال بيانات جميع المشتركين وموازنة كل شهر بنسبة 100%')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    final user = ref.read(currentUserProvider);
+    final repo = ref.read(firestoreRepositoryProvider);
+
+    final gameyaId = 'gam_${DateTime.now().millisecondsSinceEpoch}';
+    final gameya = Gameya(
+      id: gameyaId,
+      name: _nameController.text.trim(),
+      organizerId: user?.uid ?? 'organizer',
+      totalPot: _totalPot,
+      monthlyShareInstallment: _monthlyInstallment,
+      totalMonths: _totalMonths,
+      startDate: DateTime.now(),
+      status: GameyaStatus.active,
+      inviteCode: 'INV-${gameyaId.substring(gameyaId.length - 6)}',
+      currency: 'ج.م',
+      gracePeriodDays: 7,
+      createdAt: DateTime.now(),
+    );
+
+    final List<MemberShare> members = [];
+    int shareIdCounter = 1;
+
+    for (int m = 0; m < _totalMonths; m++) {
+      for (final slot in _monthSlots[m]) {
+        members.add(
+          MemberShare(
+            id: 'share_${gameyaId}_$shareIdCounter',
+            gameyaId: gameyaId,
+            shareGroupId: m + 1,
+            memberName: slot.name.trim(),
+            phone: WhatsAppHelper.normalizePhone(slot.phone.trim()),
+            shareRatio: slot.shareRatio,
+            installmentAmount: _monthlyInstallment * slot.shareRatio,
+            payoutMonth: m + 1,
+          ),
+        );
+        shareIdCounter++;
+      }
+    }
+
+    try {
+      await repo.createRealGameya(gameya: gameya, members: members);
+      ref.read(activeGameyaIdProvider.notifier).state = gameyaId;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم إنشاء الجمعية وتعيين جميع المشتركين بنجاح في قاعدة البيانات!'),
+            backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في حفظ الجمعية: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isAllBalanced = _isBalanced;
+    final isBalanced = _isAllBalanced;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('إنشاء جمعية جديدة وميزان الشهور'),
+          title: const Text('إنشاء جمعية جديدة وتعيين المشتركين'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop(),
           ),
+          actions: [
+            TextButton.icon(
+              onPressed: _fillSampleRealMembers,
+              icon: const Icon(Icons.auto_fix_high, size: 16, color: AppTheme.primaryGreen),
+              label: const Text('ملء تجريبي', style: TextStyle(color: AppTheme.primaryGreen, fontSize: 12)),
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -67,36 +204,29 @@ class _CreationWizardScreenState extends State<CreationWizardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Step header
+                // Header Banner
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryGreen.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppTheme.primaryLight.withOpacity(0.3)),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryGreen,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.calculate, color: Colors.white, size: 24),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      Icon(Icons.people_alt_outlined, color: AppTheme.primaryGreen, size: 28),
+                      SizedBox(width: 12),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'ميزان الشهور الذكي (Month Balancer)',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textDark),
+                              'تعيين المشتركين وميزان الشهور',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDark),
                             ),
                             SizedBox(height: 2),
                             Text(
-                              'لا يمكن تفعيل أي جمعية إلا بعد موازنة كل شهر بنسبة 100% تماماً.',
+                              'أدخل أسماء المشتركين وأرقام هواتفهم لكل شهر (سهم كامل أو أنصاف أسهم).',
                               style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                             ),
                           ],
@@ -106,9 +236,9 @@ class _CreationWizardScreenState extends State<CreationWizardScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                // Basic Details
+                // Gameya Details
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
@@ -137,15 +267,15 @@ class _CreationWizardScreenState extends State<CreationWizardScreen> {
                       child: DropdownButtonFormField<int>(
                         value: _totalMonths,
                         decoration: const InputDecoration(
-                          labelText: 'عدد الشهور',
+                          labelText: 'المدة بالأشهر',
                           prefixIcon: Icon(Icons.calendar_month, color: AppTheme.primaryGreen),
                         ),
-                        items: [5, 10, 12, 20].map((m) => DropdownMenuItem(value: m, child: Text('$m شهور'))).toList(),
+                        items: [5, 10, 12].map((m) => DropdownMenuItem(value: m, child: Text('$m شهور'))).toList(),
                         onChanged: (val) {
                           if (val != null) {
                             setState(() {
                               _totalMonths = val;
-                              _resetAllocations();
+                              _initializeSlots();
                             });
                           }
                         },
@@ -154,153 +284,94 @@ class _CreationWizardScreenState extends State<CreationWizardScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
 
-                // Calculated share info
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('قيمة القسط الشهري للسهم الكامل (100%):', style: TextStyle(color: AppTheme.textMuted)),
-                      Text(
-                        '${_monthlyInstallment.toStringAsFixed(0)} ج.م',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryGreen, fontSize: 15),
-                      ),
-                    ],
-                  ),
+                // Month Members Assignment Section
+                const Text(
+                  'جدول تعيين المشتركين لكل شهر:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark),
                 ),
-
-                const SizedBox(height: 24),
-
-                // Month Balancer Grid Title & Auto-balance helper
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'توزيع حصص الشهور (ميزان الـ 100%):',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textDark),
-                    ),
-                    TextButton.icon(
-                      onPressed: _fillBalanced,
-                      icon: const Icon(Icons.auto_fix_high, size: 16),
-                      label: const Text('موازنة تلقائية 100%'),
-                    ),
-                  ],
-                ),
-
                 const SizedBox(height: 8),
 
-                // Month Grid
-                ListView.separated(
+                ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _totalMonths,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, idx) {
-                    final monthNum = idx + 1;
-                    final ratio = _monthAllocations[monthNum] ?? 0.0;
-                    final percent = (ratio * 100).round();
-                    final isMonthBalanced = (ratio - 1.0).abs() < 0.001;
-                    final isOver = ratio > 1.0;
+                  itemBuilder: (context, mIdx) {
+                    final monthNum = mIdx + 1;
+                    final slots = _monthSlots[mIdx];
+                    final currentRatioSum = slots.fold(0.0, (acc, s) => acc + s.shareRatio);
+                    final isMonthBalanced = (currentRatioSum - 1.0).abs() < 0.001;
 
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isMonthBalanced
-                              ? AppTheme.primaryLight
-                              : isOver
-                                  ? AppTheme.errorRed
-                                  : AppTheme.accentGold,
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: isMonthBalanced ? AppTheme.primaryLight : AppTheme.errorRed,
                           width: isMonthBalanced ? 1.5 : 1.0,
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isMonthBalanced
-                                  ? AppTheme.primaryGreen.withOpacity(0.1)
-                                  : isOver
-                                      ? AppTheme.errorRed.withOpacity(0.1)
-                                      : AppTheme.accentGold.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              isMonthBalanced
-                                  ? Icons.check_circle
-                                  : isOver
-                                      ? Icons.warning
-                                      : Icons.timelapse,
-                              color: isMonthBalanced
-                                  ? AppTheme.primaryGreen
-                                  : isOver
-                                      ? AppTheme.errorRed
-                                      : AppTheme.accentGold,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'شهر $monthNum',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  'شهر $monthNum (الاستحقاق: ${_totalPot.toStringAsFixed(0)} ج.م)',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                 ),
-                                Text(
-                                  'المحجوز: $percent% (المبلغ: ${(ratio * _totalPot).toStringAsFixed(0)} ج.م)',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: isMonthBalanced ? AppTheme.primaryGreen : Colors.grey[700],
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isMonthBalanced
+                                        ? AppTheme.primaryGreen.withOpacity(0.1)
+                                        : AppTheme.errorRed.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${(currentRatioSum * 100).toInt()}%',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color: isMonthBalanced ? AppTheme.primaryGreen : AppTheme.errorRed,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          // Ratio controls: 0.25 steps
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
-                            onPressed: ratio > 0.0
-                                ? () {
-                                    setState(() {
-                                      _monthAllocations[monthNum] = (ratio - 0.25).clamp(0.0, 2.0);
-                                    });
-                                  }
-                                : null,
-                          ),
-                          Text(
-                            '$percent%',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: isMonthBalanced
-                                  ? AppTheme.primaryGreen
-                                  : isOver
-                                      ? AppTheme.errorRed
-                                      : AppTheme.accentGold,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryGreen),
-                            onPressed: ratio < 2.0
-                                ? () {
-                                    setState(() {
-                                      _monthAllocations[monthNum] = (ratio + 0.25).clamp(0.0, 2.0);
-                                    });
-                                  }
-                                : null,
-                          ),
-                        ],
+                            const Divider(height: 16),
+
+                            // Slots in this month
+                            for (int sIdx = 0; sIdx < slots.length; sIdx++) ...[
+                              _buildMemberSlotRow(mIdx, sIdx),
+                              if (sIdx < slots.length - 1) const Divider(height: 12),
+                            ],
+
+                            // Split Share Button (allow adding partner if under 100%)
+                            if (currentRatioSum < 1.0 && slots.length < 4)
+                              TextButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    final remaining = 1.0 - currentRatioSum;
+                                    slots.add(
+                                      MemberSlot(
+                                        name: '',
+                                        phone: '',
+                                        shareRatio: remaining > 0.5 ? 0.5 : remaining,
+                                        payoutMonth: monthNum,
+                                      ),
+                                    );
+                                  });
+                                },
+                                icon: const Icon(Icons.add, size: 16),
+                                label: const Text('إضافة شريك في نفس الشهر (Split Share)'),
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -308,77 +379,103 @@ class _CreationWizardScreenState extends State<CreationWizardScreen> {
 
                 const SizedBox(height: 24),
 
-                // Hard Activation Banner Guard
-                if (!isAllBalanced)
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2), // Red light 50
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.errorRed),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.lock, color: AppTheme.errorRed),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'زر التفعيل مقفل: يوجد شهور غير مكتملة بنسبة 100%. اضغط "موازنة تلقائية" أو وزّع الحصص بدقة.',
-                            style: TextStyle(color: AppTheme.errorRed, fontSize: 13, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFECFDF5), // Emerald light
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.primaryLight),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.verified, color: AppTheme.primaryGreen),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'الميزان مكتمل 100%! الحسابات الرياضية محكمة والجمعية جاهزة للتفعيل.',
-                            style: TextStyle(color: AppTheme.primaryGreen, fontSize: 13, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                const SizedBox(height: 20),
-
-                // Activate Button
+                // Submit Button
                 ElevatedButton(
-                  onPressed: isAllBalanced
-                      ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('تم إنشاء وتفعيل الجمعية بنجاح مع قفل المعاملات الرياضية!'),
-                              backgroundColor: AppTheme.primaryGreen,
-                            ),
-                          );
-                          Navigator.of(context).pop();
-                        }
-                      : null,
+                  onPressed: isBalanced && !_isSaving ? _saveAndActivateGameya : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isAllBalanced ? AppTheme.primaryGreen : Colors.grey[400],
+                    backgroundColor: isBalanced ? AppTheme.primaryGreen : Colors.grey[400],
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('حفظ وتفعيل الجمعية (مقفلة حسابياً)', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text('حفظ وتفعيل الجمعية وتوليد الأقساط', style: TextStyle(fontSize: 16, color: Colors.white)),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMemberSlotRow(int mIdx, int sIdx) {
+    final slot = _monthSlots[mIdx][sIdx];
+
+    return Row(
+      children: [
+        // Member Name
+        Expanded(
+          flex: 4,
+          child: TextFormField(
+            initialValue: slot.name,
+            decoration: InputDecoration(
+              labelText: 'اسم المشترك',
+              hintText: 'مثال: أحمد محمود',
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              prefixIcon: const Icon(Icons.person, size: 18),
+            ),
+            onChanged: (val) => slot.name = val,
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // Phone
+        Expanded(
+          flex: 4,
+          child: TextFormField(
+            initialValue: slot.phone,
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              labelText: 'رقم الواتساب',
+              hintText: '01xxxxxxxxx',
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              prefixIcon: const Icon(Icons.phone, size: 18),
+            ),
+            onChanged: (val) => slot.phone = val,
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // Share ratio selector
+        Expanded(
+          flex: 3,
+          child: DropdownButtonFormField<double>(
+            value: slot.shareRatio,
+            decoration: const InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            ),
+            items: const [
+              DropdownMenuItem(value: 1.0, child: Text('100%')),
+              DropdownMenuItem(value: 0.5, child: Text('50%')),
+              DropdownMenuItem(value: 0.25, child: Text('25%')),
+            ],
+            onChanged: (val) {
+              if (val != null) {
+                setState(() => slot.shareRatio = val);
+              }
+            },
+          ),
+        ),
+
+        // Delete button if multiple
+        if (_monthSlots[mIdx].length > 1)
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppTheme.errorRed, size: 20),
+            onPressed: () {
+              setState(() {
+                _monthSlots[mIdx].removeAt(sIdx);
+              });
+            },
+          ),
+      ],
     );
   }
 }

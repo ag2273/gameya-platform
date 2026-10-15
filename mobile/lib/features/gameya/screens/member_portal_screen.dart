@@ -1,43 +1,109 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../domain/models/installment.dart';
+import '../providers/gameya_providers.dart';
 import 'turn_swap_screen.dart';
 
-class MemberPortalScreen extends StatefulWidget {
+class MemberPortalScreen extends ConsumerStatefulWidget {
   const MemberPortalScreen({super.key});
 
   @override
-  State<MemberPortalScreen> createState() => _MemberPortalScreenState();
+  ConsumerState<MemberPortalScreen> createState() => _MemberPortalScreenState();
 }
 
-class _MemberPortalScreenState extends State<MemberPortalScreen> {
-  // Member State
-  final String memberName = 'محمد عبد الله';
-  final double shareRatio = 0.5; // Half share
-  final int payoutMonth = 7;
-  final int currentMonth = 3;
-  final double monthlyInstallment = 2500.0;
-  bool hasUploadedReceipt = false;
+class _MemberPortalScreenState extends ConsumerState<MemberPortalScreen> {
+  bool _isUploading = false;
+
+  Future<void> _uploadReceipt(Installment installment) async {
+    setState(() => _isUploading = true);
+    final repo = ref.read(firestoreRepositoryProvider);
+
+    try {
+      // Simulate client-compressed 80KB receipt bytes
+      final dummyBytes = List.generate(80 * 1024, (i) => i % 256);
+      await repo.uploadReceiptToFirestore(
+        gameyaId: installment.gameyaId,
+        installmentId: installment.id,
+        compressedBytes: dummyBytes,
+        filename: 'receipt_${installment.id}.jpg',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم رفع إيصال التحويل بنجاح وبانتظار اعتماد المنظم!'),
+            backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في رفع الإيصال: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final remainingMonths = payoutMonth - currentMonth;
+    final user = ref.watch(currentUserProvider);
+    final memberSharesAsync = ref.watch(memberSharesStreamProvider);
+    final memberShares = memberSharesAsync.value ?? [];
+
+    // If no assigned share found for this phone, provide a graceful state
+    final myShare = memberShares.isNotEmpty
+        ? memberShares.first
+        : null;
+
+    final memberName = user?.displayName ?? (myShare?.memberName ?? 'محمد عبد الله');
+    final shareRatio = myShare?.shareRatio ?? 0.5;
+    final payoutMonth = myShare?.payoutMonth ?? 7;
+    const currentMonth = 3;
+    final monthlyInstallment = myShare?.installmentAmount ?? 2500.0;
+    final remainingMonths = (payoutMonth - currentMonth).clamp(0, 100);
+
+    final installmentsAsync = ref.watch(activeInstallmentsStreamProvider);
+    final allInstallments = installmentsAsync.value ?? [];
+    final myInstallment = allInstallments.firstWhere(
+      (i) => myShare != null && i.memberShareId == myShare.id,
+      orElse: () => Installment(
+        id: 'inst_current',
+        gameyaId: myShare?.gameyaId ?? 'gameya_family_2026',
+        memberShareId: myShare?.id ?? 'm2',
+        monthNumber: currentMonth,
+        amount: monthlyInstallment,
+        status: InstallmentStatus.pending,
+      ),
+    );
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('بوابتي الشخصية (المشترك)'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+          actions: [
+            // Logout
+            IconButton(
+              icon: const Icon(Icons.logout, color: AppTheme.errorRed),
+              tooltip: 'تسجيل الخروج',
+              onPressed: () async {
+                final auth = ref.read(authRepositoryProvider);
+                await auth.signOut();
+                ref.read(currentUserProvider.notifier).state = null;
+              },
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Member Greeting & Privacy Assurance Card
+              // Member Greeting Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -116,9 +182,9 @@ class _MemberPortalScreenState extends State<MemberPortalScreen> {
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            'قيمة استحقاقك: 25,000 ج.م (نصف سهم)',
-                            style: TextStyle(fontSize: 12, color: AppTheme.primaryGreen, fontWeight: FontWeight.w600),
+                          Text(
+                            'قيمة استحقاقك: ${(50000 * shareRatio).toStringAsFixed(0)} ج.م',
+                            style: const TextStyle(fontSize: 12, color: AppTheme.primaryGreen, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -145,22 +211,32 @@ class _MemberPortalScreenState extends State<MemberPortalScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'قسط الشهر الحالي (شهر 3)',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                        Text(
+                          'قسط الشهر الحالي (شهر $currentMonth)',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: hasUploadedReceipt
-                                ? Colors.blue.withOpacity(0.1)
-                                : AppTheme.accentGold.withOpacity(0.1),
+                            color: myInstallment.status == InstallmentStatus.paid
+                                ? AppTheme.primaryGreen.withOpacity(0.1)
+                                : myInstallment.status == InstallmentStatus.review
+                                    ? Colors.blue.withOpacity(0.1)
+                                    : AppTheme.accentGold.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            hasUploadedReceipt ? 'قيد مراجعة المنظم' : 'في الانتظار',
+                            myInstallment.status == InstallmentStatus.paid
+                                ? 'مدفوع ومُعتمد ✔'
+                                : myInstallment.status == InstallmentStatus.review
+                                    ? 'قيد مراجعة المنظم'
+                                    : 'في الانتظار',
                             style: TextStyle(
-                              color: hasUploadedReceipt ? Colors.blue : AppTheme.accentGold,
+                              color: myInstallment.status == InstallmentStatus.paid
+                                  ? AppTheme.primaryGreen
+                                  : myInstallment.status == InstallmentStatus.review
+                                      ? Colors.blue
+                                      : AppTheme.accentGold,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -170,7 +246,7 @@ class _MemberPortalScreenState extends State<MemberPortalScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'المبلغ المطلوب: ${monthlyInstallment.toStringAsFixed(0)} ج.م',
+                      'المبلغ المطلوب: ${myInstallment.amount.toStringAsFixed(0)} ج.م',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textDark),
                     ),
                     const SizedBox(height: 4),
@@ -181,25 +257,24 @@ class _MemberPortalScreenState extends State<MemberPortalScreen> {
                     const SizedBox(height: 14),
 
                     // Receipt Upload Button
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          hasUploadedReceipt = true;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('تم ضغط الصورة لأقل من 150KB ورفع الإيصال بنجاح للمراجعة!'),
-                            backgroundColor: AppTheme.primaryGreen,
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.cloud_upload_outlined, color: Colors.white),
-                      label: Text(hasUploadedReceipt ? 'تحديث إيصال التحويل' : 'رفع إيصال التحويل (صورة)'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: hasUploadedReceipt ? Colors.blue : AppTheme.primaryGreen,
-                        minimumSize: const Size(double.infinity, 48),
+                    if (myInstallment.status != InstallmentStatus.paid)
+                      ElevatedButton.icon(
+                        onPressed: _isUploading ? null : () => _uploadReceipt(myInstallment),
+                        icon: const Icon(Icons.cloud_upload_outlined, color: Colors.white),
+                        label: _isUploading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(myInstallment.status == InstallmentStatus.review
+                                ? 'تحديث إيصال التحويل'
+                                : 'رفع إيصال التحويل (صورة)'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: myInstallment.status == InstallmentStatus.review ? Colors.blue : AppTheme.primaryGreen,
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

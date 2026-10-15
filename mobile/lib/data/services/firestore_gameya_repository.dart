@@ -78,6 +78,72 @@ class FirestoreGameyaRepository {
     });
   }
 
+  /// Creates a real production Gameya, saving all assigned member shares and generating all installments.
+  Future<void> createRealGameya({
+    required Gameya gameya,
+    required List<MemberShare> members,
+  }) async {
+    final batch = _firestore.batch();
+    
+    // 1. Gameya document
+    final gameyaRef = _firestore.collection('gameyas').doc(gameya.id);
+    batch.set(gameyaRef, gameya.toMap());
+
+    // 2. Members subcollection
+    for (final member in members) {
+      final memberRef = gameyaRef.collection('members').doc(member.id);
+      batch.set(memberRef, member.toMap());
+
+      // 3. Generate installments for each month (1 to gameya.totalMonths)
+      for (int m = 1; m <= gameya.totalMonths; m++) {
+        final installmentId = 'inst_${gameya.id}_${member.id}_m$m';
+        final instRef = gameyaRef.collection('installments').doc(installmentId);
+        final dueDate = gameya.startDate.add(Duration(days: 30 * (m - 1)));
+        
+        batch.set(instRef, {
+          'id': installmentId,
+          'gameyaId': gameya.id,
+          'memberShareId': member.id,
+          'monthNumber': m,
+          'amount': member.installmentAmount,
+          'status': InstallmentStatus.pending.name,
+          'dueDate': dueDate.toIso8601String(),
+          'paidAt': null,
+          'verifiedBy': null,
+        });
+      }
+    }
+
+    await batch.commit();
+  }
+
+  /// Streams all Gameyas where user is the organizer.
+  Stream<List<Gameya>> streamOrganizerGameyas(String organizerUid) {
+    return _firestore
+        .collection('gameyas')
+        .where('organizerId', isEqualTo: organizerUid)
+        .snapshots()
+        .map<List<Gameya>>((snapshot) {
+      return snapshot.docs
+          .map((doc) => Gameya.fromMap(doc.data(), doc.id))
+          .toList();
+    }).handleError((_) => <Gameya>[]);
+  }
+
+  /// Streams member shares matching phone number.
+  Stream<List<MemberShare>> streamMemberSharesByPhone(String phone) {
+    return _firestore
+        .collectionGroup('members')
+        .where('phone', isEqualTo: phone)
+        .snapshots()
+        .map<List<MemberShare>>((snapshot) {
+      return snapshot.docs
+          .map((doc) => MemberShare.fromMap(doc.data(), doc.id))
+          .toList();
+    }).handleError((_) => <MemberShare>[]);
+  }
+
+
   /// 1-Tap Toggle between Pending and Paid directly in live Firestore.
   Future<void> toggleInstallmentStatus({
     required String gameyaId,
