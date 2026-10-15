@@ -1,4 +1,4 @@
-import '../..//core/utils/whatsapp_helper.dart';
+import '../../core/utils/whatsapp_helper.dart';
 
 class InvitePayload {
   final String inviteCode;

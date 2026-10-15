@@ -19,7 +19,6 @@ class AppTheme {
         primary: primaryGreen,
         secondary: primaryLight,
         error: errorRed,
-        background: backgroundLight,
         surface: surfaceCard,
       ),
       scaffoldBackgroundColor: backgroundLight,

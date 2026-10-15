@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/math_validator.dart';
 
 class CreationWizardScreen extends StatefulWidget {
   const CreationWizardScreen({super.key});

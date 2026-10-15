@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/whatsapp_helper.dart';
 import '../../../domain/models/installment.dart';
+import '../../../domain/models/member_share.dart';
 import '../providers/gameya_providers.dart';
 import 'creation_wizard_screen.dart';
 import 'member_portal_screen.dart';
@@ -605,16 +607,15 @@ class _GameyaDashboardScreenState extends ConsumerState<GameyaDashboardScreen> {
                                 icon: const Icon(Icons.chat_bubble_outline, color: AppTheme.primaryGreen),
                                 tooltip: 'تذكير واتساب بضغطة زر',
                                 onPressed: () {
-                                  WhatsAppHelper.openWhatsApp(
+                                  final uri = WhatsAppHelper.buildOverdueReminderUri(
                                     phone: member.phone,
-                                    message: WhatsAppHelper.buildInstallmentReminderMessage(
-                                      memberName: member.memberName,
-                                      gameyaName: gameyaName,
-                                      monthNumber: currentMonth,
-                                      amount: inst.amount,
-                                      currency: 'ج.م',
-                                    ),
+                                    memberName: member.memberName,
+                                    gameyaName: gameyaName,
+                                    monthNumber: currentMonth,
+                                    amount: inst.amount,
+                                    currency: 'ج.م',
                                   );
+                                  launchUrl(uri, mode: LaunchMode.externalApplication);
                                 },
                               ),
                             // Live Firestore 1-Tap Toggle

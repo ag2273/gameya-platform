@@ -29,28 +29,29 @@ class _ExportScreenState extends State<ExportScreen> {
       startDate: DateTime(2026, 1, 1),
       status: GameyaStatus.active,
       inviteCode: 'INV-123',
+      createdAt: DateTime(2026, 1, 1),
     );
 
     final members = [
       MemberShare(
         id: 's1',
         gameyaId: 'gam_1',
-        userId: 'u1',
-        displayName: 'أحمد محمود',
+        shareGroupId: 1,
+        memberName: 'أحمد محمود',
         phone: '01011111111',
         shareRatio: 1.0,
-        monthNumber: 3,
-        createdAt: DateTime(2026, 1, 1),
+        installmentAmount: 5000,
+        payoutMonth: 3,
       ),
       MemberShare(
         id: 's2',
         gameyaId: 'gam_1',
-        userId: 'u2',
-        displayName: 'محمد عبد الله',
+        shareGroupId: 1,
+        memberName: 'محمد عبد الله',
         phone: '01022222222',
         shareRatio: 0.5,
-        monthNumber: 7,
-        createdAt: DateTime(2026, 1, 1),
+        installmentAmount: 2500,
+        payoutMonth: 7,
       ),
     ];
 
@@ -78,34 +79,31 @@ class _ExportScreenState extends State<ExportScreen> {
     setState(() {
       if (widget.isOrganizer) {
         if (_exportFormat == 'CSV') {
-          _exportedPreview = ExportEngine.exportOrganizerAuditCsv(
+          _exportedPreview = ExportEngine.exportOrganizerCsv(
             gameya: gameya,
             members: members,
             installments: installments,
-            disbursements: [],
           );
         } else {
-          _exportedPreview = ExportEngine.exportOrganizerAuditJson(
+          _exportedPreview = ExportEngine.exportOrganizerJson(
             gameya: gameya,
             members: members,
             installments: installments,
-            disbursements: [],
           );
         }
       } else {
         if (_exportFormat == 'CSV') {
-          _exportedPreview = ExportEngine.exportMemberPersonalStatementCsv(
+          _exportedPreview = ExportEngine.exportMemberStatementCsv(
             gameya: gameya,
-            member: members[1],
-            memberInstallments: [installments[1]],
+            myShare: members[1],
+            myInstallments: [installments[1]],
           );
         } else {
-          final data = ExportEngine.exportMemberPersonalStatementJson(
+          _exportedPreview = ExportEngine.exportMemberStatementJson(
             gameya: gameya,
-            member: members[1],
-            memberInstallments: [installments[1]],
+            myShare: members[1],
+            myInstallments: [installments[1]],
           );
-          _exportedPreview = data.toString();
         }
       }
     });

@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "cpm.growthconsultingAI.gam3eya"
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
