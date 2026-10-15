@@ -36,6 +36,25 @@ class WhatsAppHelper {
         'شاكرين ومقدرين حسن تعاونكم وحرصكم الطيب! 🙏';
   }
 
+  /// Builds a direct wa.me 1-tap URI for an overdue or pending member reminder.
+  static Uri buildOverdueReminderUri({
+    required String phone,
+    required String memberName,
+    required String gameyaName,
+    required int monthNumber,
+    required double amount,
+    String currency = 'EGP',
+  }) {
+    final message = buildInstallmentReminderMessage(
+      memberName: memberName,
+      gameyaName: gameyaName,
+      monthNumber: monthNumber,
+      amount: amount,
+      currency: currency,
+    );
+    return buildWhatsAppUri(phone: phone, message: message);
+  }
+
   /// Builds an invite message to join a Gameya.
   static String buildInviteMessage({
     required String gameyaName,

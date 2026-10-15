@@ -50,5 +50,19 @@ void main() {
   expectTrue(broadcast.contains('8 من 10'));
   expectTrue(broadcast.contains('40000'));
 
-  print('SUCCESS: All WhatsAppHelper tests passed (3/3)!');
+  // Test 4: Overdue reminder wa.me URI generation
+  print('Test 4: Overdue reminder URI generation...');
+  final uri = WhatsAppHelper.buildOverdueReminderUri(
+    phone: '01099887766',
+    memberName: 'خالد إبراهيم',
+    gameyaName: 'جمعية العائلة الكبرى',
+    monthNumber: 4,
+    amount: 5000.0,
+    currency: 'ج.م',
+  );
+  expectTrue(uri.toString().startsWith('https://wa.me/201099887766?text='));
+  expectTrue(uri.toString().contains(Uri.encodeComponent('خالد إبراهيم')));
+  expectTrue(uri.toString().contains(Uri.encodeComponent('5000')));
+
+  print('SUCCESS: All WhatsAppHelper tests passed (4/4)!');
 }
