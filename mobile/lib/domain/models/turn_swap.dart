@@ -69,4 +69,28 @@ class TurnSwap {
       createdAt: _parseDate(map['createdAt']),
     );
   }
+
+  TurnSwap copyWith({
+    String? id,
+    String? gameyaId,
+    String? requesterMemberId,
+    String? targetMemberId,
+    int? requesterMonth,
+    int? targetMonth,
+    double? shareRatio,
+    TurnSwapStatus? status,
+    DateTime? createdAt,
+  }) {
+    return TurnSwap(
+      id: id ?? this.id,
+      gameyaId: gameyaId ?? this.gameyaId,
+      requesterMemberId: requesterMemberId ?? this.requesterMemberId,
+      targetMemberId: targetMemberId ?? this.targetMemberId,
+      requesterMonth: requesterMonth ?? this.requesterMonth,
+      targetMonth: targetMonth ?? this.targetMonth,
+      shareRatio: shareRatio ?? this.shareRatio,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
