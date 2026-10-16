@@ -62,14 +62,19 @@ class FirebaseAuthRepository {
   }) async {
     final normalizedPhone = WhatsAppHelper.normalizePhone(phone);
     
-    // Ensure Firebase Auth session
-    User? firebaseUser = _auth.currentUser;
-    if (firebaseUser == null) {
-      final cred = await _auth.signInAnonymously();
-      firebaseUser = cred.user;
+    String uid = 'usr_$normalizedPhone';
+    try {
+      if (_auth.currentUser != null) {
+        uid = _auth.currentUser!.uid;
+      } else {
+        final cred = await _auth.signInAnonymously();
+        if (cred.user != null) {
+          uid = cred.user!.uid;
+        }
+      }
+    } catch (_) {
+      // If Anonymous Auth is not enabled in Firebase Console, fallback smoothly to phone UID
     }
-
-    final uid = firebaseUser?.uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
 
     final appUser = AppUser(
       uid: uid,
