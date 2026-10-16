@@ -1,8 +1,28 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 enum DisbursementStatus {
   disbursed,
   confirmed,
+}
+
+DateTime _parseDate(dynamic val) {
+  if (val == null) return DateTime.now();
+  if (val is DateTime) return val;
+  if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
+  try {
+    return (val as dynamic).toDate();
+  } catch (_) {
+    return DateTime.now();
+  }
+}
+
+DateTime? _parseNullableDate(dynamic val) {
+  if (val == null) return null;
+  if (val is DateTime) return val;
+  if (val is String) return DateTime.tryParse(val);
+  try {
+    return (val as dynamic).toDate();
+  } catch (_) {
+    return null;
+  }
 }
 
 class Disbursement {
@@ -44,16 +64,18 @@ class Disbursement {
       'amount': amount,
       'status': status.name,
       'paymentMethod': paymentMethod,
-      'disbursedAt': Timestamp.fromDate(disbursedAt),
-      'autoConfirmDeadline': Timestamp.fromDate(autoConfirmDeadline),
-      'confirmedAt': confirmedAt != null ? Timestamp.fromDate(confirmedAt!) : null,
+      'disbursedAt': disbursedAt.toIso8601String(),
+      'autoConfirmDeadline': autoConfirmDeadline.toIso8601String(),
+      'confirmedAt': confirmedAt?.toIso8601String(),
     };
   }
 
   factory Disbursement.fromMap(Map<String, dynamic> map, String docId) {
-    final disbursed = (map['disbursedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+    final disbursed = _parseDate(map['disbursedAt']);
     final defaultDeadline = disbursed.add(const Duration(days: 2));
-    final deadline = (map['autoConfirmDeadline'] as Timestamp?)?.toDate() ?? defaultDeadline;
+    final deadline = map['autoConfirmDeadline'] != null
+        ? _parseDate(map['autoConfirmDeadline'])
+        : defaultDeadline;
 
     return Disbursement(
       id: docId,
@@ -68,7 +90,33 @@ class Disbursement {
       paymentMethod: map['paymentMethod'] ?? 'InstaPay',
       disbursedAt: disbursed,
       autoConfirmDeadline: deadline,
-      confirmedAt: (map['confirmedAt'] as Timestamp?)?.toDate(),
+      confirmedAt: _parseNullableDate(map['confirmedAt']),
+    );
+  }
+
+  Disbursement copyWith({
+    String? id,
+    String? gameyaId,
+    int? monthNumber,
+    String? recipientMemberId,
+    double? amount,
+    DisbursementStatus? status,
+    String? paymentMethod,
+    DateTime? disbursedAt,
+    DateTime? autoConfirmDeadline,
+    DateTime? confirmedAt,
+  }) {
+    return Disbursement(
+      id: id ?? this.id,
+      gameyaId: gameyaId ?? this.gameyaId,
+      monthNumber: monthNumber ?? this.monthNumber,
+      recipientMemberId: recipientMemberId ?? this.recipientMemberId,
+      amount: amount ?? this.amount,
+      status: status ?? this.status,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      disbursedAt: disbursedAt ?? this.disbursedAt,
+      autoConfirmDeadline: autoConfirmDeadline ?? this.autoConfirmDeadline,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
     );
   }
 }

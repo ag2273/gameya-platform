@@ -1,5 +1,3 @@
-import 'package:url_launcher/url_launcher.dart';
-
 class WhatsAppHelper {
   /// Normalizes an Egyptian or international phone number for WhatsApp wa.me links.
   static String normalizePhone(String rawPhone) {
@@ -9,24 +7,19 @@ class WhatsAppHelper {
     }
     // Convert Egyptian local format (01xxxxxxxxx) to international format (201xxxxxxxxx)
     if (cleaned.startsWith('01') && cleaned.length == 11) {
-      cleaned = '20$cleaned';
+      cleaned = '20${cleaned.substring(1)}';
     }
     return cleaned;
   }
 
-  /// Opens WhatsApp with a pre-filled message using direct wa.me link.
-  static Future<bool> openWhatsApp({
+  /// Builds a direct wa.me URI for WhatsApp.
+  static Uri buildWhatsAppUri({
     required String phone,
     required String message,
-  }) async {
+  }) {
     final normalized = normalizePhone(phone);
     final encodedMessage = Uri.encodeComponent(message);
-    final url = Uri.parse('https://wa.me/$normalized?text=$encodedMessage');
-
-    if (await canLaunchUrl(url)) {
-      return await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
-    return false;
+    return Uri.parse('https://wa.me/$normalized?text=$encodedMessage');
   }
 
   /// Builds a personalized Arabic installment reminder message.
@@ -41,6 +34,25 @@ class WhatsAppHelper {
         'نذكركم بموعد سداد قسط جمعية ($gameyaName) الخاص بشهر $monthNumber.\n'
         '💰 القيمة المستحقة: ${amount.toStringAsFixed(0)} $currency.\n\n'
         'شاكرين ومقدرين حسن تعاونكم وحرصكم الطيب! 🙏';
+  }
+
+  /// Builds a direct wa.me 1-tap URI for an overdue or pending member reminder.
+  static Uri buildOverdueReminderUri({
+    required String phone,
+    required String memberName,
+    required String gameyaName,
+    required int monthNumber,
+    required double amount,
+    String currency = 'EGP',
+  }) {
+    final message = buildInstallmentReminderMessage(
+      memberName: memberName,
+      gameyaName: gameyaName,
+      monthNumber: monthNumber,
+      amount: amount,
+      currency: currency,
+    );
+    return buildWhatsAppUri(phone: phone, message: message);
   }
 
   /// Builds an invite message to join a Gameya.

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نموذج تجربة منصة الجمعيات الذكية (Interactive Prototype)</title>
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-light: #14b8a6;
+      --primary-bg: #ecfdf5;
+      --accent: #f59e0b;
+      --danger: #dc2626;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Cairo", sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px; line-height: 1.5; }
+    .container { max-width: 960px; margin: 0 auto; }
+    header { background: var(--surface); padding: 20px 24px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 24px; }
+    h1 { font-size: 22px; color: var(--primary); margin-bottom: 6px; }
+    p.subtitle { color: var(--text-muted); font-size: 14px; }
+    .role-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: #0d5f58; }
+    .btn-outline { background: white; border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--bg); }
+    .btn-danger { background: #fee2e2; color: var(--danger); border-color: #fca5a5; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    .pill-success { background: #d1fae5; color: #065f46; }
+    .pill-warning { background: #fef3c7; color: #92400e; }
+    .pill-danger { background: #fee2e2; color: #991b1b; }
+    .pill-info { background: #e0f2fe; color: #075985; }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+    .card h3 { font-size: 16px; margin-bottom: 12px; color: var(--text); }
+    
+    .balancer-container { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+    .month-bars { display: flex; gap: 12px; margin-top: 16px; overflow-x: auto; padding-bottom: 8px; }
+    .month-col { flex: 1; min-width: 100px; text-align: center; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+    .month-col.balanced { background: #ecfdf5; border-color: #a7f3d0; }
+    .month-col.deficit { background: #fffbeb; border-color: #fde68a; }
+    .month-col.surplus { background: #fef2f2; border-color: #fecaca; }
+    .ratio-val { font-size: 18px; font-weight: bold; margin: 4px 0; }
+    
+    .table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    .table th, .table td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--border); }
+    .table th { background: var(--bg); color: var(--text-muted); font-size: 12px; }
+    
+    .walkthroughs { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 24px; }
+    .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; overflow-x: auto; }
+    .tab-btn { padding: 8px 14px; border-radius: 8px; border: none; background: var(--bg); color: var(--text); cursor: pointer; font-weight: 600; font-size: 13px; }
+    .tab-btn.active { background: var(--primary); color: white; }
+    .step-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .log-panel { background: #0f172a; color: #f8fafc; padding: 14px 18px; border-radius: 12px; font-family: monospace; font-size: 13px; margin-top: 16px; max-height: 140px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>منصة الجمعيات الذكية — النموذج التفاعلي (Prototype)</h1>
+      <p class="subtitle">تجربة حية للتحقق من نموذج البيانات: الأسهم المقسمة، الحماية الرياضية للشهور، دورة الأقساط، والتذكيرات.</p>
+      <div class="role-bar">
+        <div>
+          <span>الدور النشط حالياً: </span>
+          <strong id="activeRoleText" style="color: var(--primary);">المنظم (الأدمن)</strong>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-outline" onclick="switchRole('organizer')">وضع المنظم</button>
+          <button class="btn btn-outline" onclick="switchRole('member')">وضع المشترك (أحمد)</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Month Balancer (Mathematical Integrity) -->
+    <div class="balancer-container">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3>مؤشر الحماية الرياضية للشهور (Month Balancer)</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">يشترط اكتمال كل شهر بنسبة 100% بالضبط لتفعيل الجمعية وقفل الشروط المالية.</p>
+        </div>
+        <div id="activationBadge"></div>
+      </div>
+      <div class="month-bars" id="monthBarsContainer"></div>
+      <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: flex-end;">
+        <button id="activateBtn" class="btn btn-primary" onclick="activateGameya()">تفعيل الجمعية وقفل الحسابات</button>
+      </div>
+    </div>
+
+    <!-- Active Gameya Dashboard -->
+    <div class="grid">
+      <div class="card">
+        <h3>بيانات الجمعية</h3>
+        <p><strong>الاسم:</strong> <span id="gameyaName">جمعية النخبة (3 شهور)</span></p>
+        <p><strong>إجمالي الصندوق:</strong> <span id="totalPot">30,000 ج.م</span></p>
+        <p><strong>قسط السهم الكامل:</strong> <span id="monthlyInstallment">10,000 ج.م / شهر</span></p>
+        <p><strong>فترة السماح:</strong> <span id="gracePeriod">7 أيام</span></p>
+        <p><strong>حالة الدورة:</strong> <span id="gameyaStatusPill"></span></p>
+      </div>
+
+      <div class="card">
+        <h3>المستفيد من القبض (الشهر الحالي: شهر 2)</h3>
+        <div id="beneficiaryDisplay" style="margin-top: 8px;"></div>
+        <div style="margin-top: 14px;" id="organizerDisburseArea">
+          <button class="btn btn-outline" onclick="disbursePot()">تسليم الصندوق للمستفيد</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members & Installment Tracking Section -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>جدول المشتركين والأقساط (شهر 2)</h3>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-outline" onclick="generateBroadcastText()">نسخ رسالة جروب الواتساب</button>
+        </div>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>المشترك</th>
+            <th>السهم والحصة</th>
+            <th>شهر القبض</th>
+            <th>القسط المطلوب</th>
+            <th>حالة السداد</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="membersTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Guided Walkthrough Scenarios -->
+    <div class="walkthroughs">
+      <h3>السيناريوهات الاسترشادية (Guided Walkthroughs)</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">اضغط على السيناريو لتجربة كيفية تعامل النظام مع الحالات المختلفة:</p>
+      
+      <div class="tabs">
+        <button class="tab-btn active" onclick="loadScenario(1)">1. السهم المقسم المتزن (50% / 50%)</button>
+        <button class="tab-btn" onclick="loadScenario(2)">2. كشف العجز وبلوك التفعيل</button>
+        <button class="tab-btn" onclick="loadScenario(3)">3. إيصال إنستاباي وقبول الأدمن</button>
+        <button class="tab-btn" onclick="loadScenario(4)">4. تبديل شهر القبض (Turn Swap)</button>
+      </div>
+
+      <div id="scenarioDescription" style="font-size: 14px; background: var(--bg); padding: 12px; border-radius: 8px;"></div>
+      <div class="step-actions" id="scenarioActions"></div>
+
+      <div class="log-panel" id="logPanel">سجل الأحداث التفاعلية يظهر هنا...</div>
+    </div>
+  </div>
+
+  <script>
+    // Pure Domain State & Model
+    let state = {
+      role: 'organizer',
+      gameya: {
+        id: 'g1',
+        name: 'جمعية النخبة',
+        totalPot: 30000,
+        totalMonths: 3,
+        monthlyShareInstallment: 10000,
+        currency: 'ج.م',
+        gracePeriodDays: 7,
+        status: 'recruiting', // 'draft', 'recruiting', 'active', 'completed'
+      },
+      currentMonth: 2,
+      members: [
+        { id: 'm1', name: 'سارة إبراهيم', phone: '01011112222', shareGroupId: 1, ratio: 1.0, payoutMonth: 1, installmentStatus: 'paid', receiptUrl: null },
+        { id: 'm2', name: 'أحمد محمود', phone: '01033334444', shareGroupId: 2, ratio: 0.5, payoutMonth: 2, installmentStatus: 'review', receiptUrl: 'receipt_instapay_5000.jpg' },
+        { id: 'm3', name: 'طارق علي', phone: '01055556666', shareGroupId: 2, ratio: 0.5, payoutMonth: 3, installmentStatus: 'pending', receiptUrl: null },
+        { id: 'm4', name: 'منى فريد', phone: '01077778888', shareGroupId: 3, ratio: 0.5, payoutMonth: 2, installmentStatus: 'paid', receiptUrl: null },
+        { id: 'm5', name: 'كريم حسن', phone: '01099990000', shareGroupId: 3, ratio: 0.5, payoutMonth: 3, installmentStatus: 'pending', receiptUrl: null }
+      ],
+      disbursement: {
+        month: 2,
+        status: 'pending', // 'pending', 'disbursed', 'confirmed'
+        deadline: null
+      }
+    };
+
+    function log(msg) {
+      const p = document.getElementById('logPanel');
+      const time = new Date().toLocaleTimeString('ar-EG');
+      p.innerHTML = `[${time}] ${msg}<br/>` + p.innerHTML;
+    }
+
+    function calculateMonthAllocations() {
+      const totals = {};
+      for (let m = 1; m <= state.gameya.totalMonths; m++) totals[m] = 0;
+      state.members.forEach(member => {
+        if (totals[member.payoutMonth] !== undefined) {
+          totals[member.payoutMonth] += member.ratio;
+        }
+      });
+      return totals;
+    }
+
+    function render() {
+      // Role display
+      document.getElementById('activeRoleText').textContent = state.role === 'organizer' ? 'المنظم (الأدمن)' : 'المشترك (أحمد محمود)';
+      document.getElementById('organizerDisburseArea').style.display = state.role === 'organizer' ? 'block' : 'none';
+
+      // Status pill
+      const statusMap = {
+        draft: { text: 'مسودة', class: 'pill-info' },
+        recruiting: { text: 'فتح الانضمام', class: 'pill-warning' },
+        active: { text: 'نشطة ومقفلة مالياً', class: 'pill-success' },
+        completed: { text: 'مكتملة', class: 'pill-info' }
+      };
+      const currStatus = statusMap[state.gameya.status];
+      document.getElementById('gameyaStatusPill').innerHTML = `<span class="pill ${currStatus.class}">${currStatus.text}</span>`;
+
+      // Month Balancer rendering
+      const allocations = calculateMonthAllocations();
+      const barsContainer = document.getElementById('monthBarsContainer');
+      barsContainer.innerHTML = '';
+      let allBalanced = true;
+
+      for (let m = 1; m <= state.gameya.totalMonths; m++) {
+        const ratio = allocations[m] || 0;
+        const percent = Math.round(ratio * 100);
+        let colClass = 'balanced';
+        let statusLabel = 'متزن 100%';
+
+        if (percent < 100) {
+          colClass = 'deficit';
+          statusLabel = `عجز ${100 - percent}%`;
+          allBalanced = false;
+        } else if (percent > 100) {
+          colClass = 'surplus';
+          statusLabel = `فائض ${percent - 100}%`;
+          allBalanced = false;
+        }
+
+        const col = document.createElement('div');
+        col.className = `month-col ${colClass}`;
+        col.innerHTML = `
+          <div style="font-size: 13px; font-weight: bold;">شهر ${m}</div>
+          <div class="ratio-val">${percent}%</div>
+          <div style="font-size: 11px;">${statusLabel}</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${(ratio * state.gameya.totalPot).toLocaleString()} ${state.gameya.currency}</div>
+        `;
+        barsContainer.appendChild(col);
+      }
+
+      // Activation Button & Badge
+      const actBtn = document.getElementById('activateBtn');
+      const actBadge = document.getElementById('activationBadge');
+      if (state.gameya.status === 'active') {
+        actBtn.disabled = true;
+        actBtn.textContent = 'الجمعية نشطة ومقفلة مالياً ✔';
+        actBadge.innerHTML = '<span class="pill pill-success">مقفلة مالياً</span>';
+      } else {
+        actBtn.disabled = !allBalanced;
+        actBtn.textContent = allBalanced ? 'تفعيل الجمعية الآن' : 'التفعيل مقفل (يوجد عجز/فائض)';
+        actBadge.innerHTML = allBalanced 
+          ? '<span class="pill pill-success">جاهزة للتفعيل</span>' 
+          : '<span class="pill pill-danger">الحسابات غير متزنة</span>';
+      }
+
+      // Beneficiary
+      const beneficiaries = state.members.filter(m => m.payoutMonth === state.currentMonth);
+      const benDiv = document.getElementById('beneficiaryDisplay');
+      benDiv.innerHTML = beneficiaries.map(b => `
+        <div style="padding: 8px 12px; background: var(--bg); border-radius: 8px; margin-bottom: 6px;">
+          <strong>${b.name}</strong> (${b.ratio * 100}% من الصندوق) — ${(b.ratio * state.gameya.totalPot).toLocaleString()} ${state.gameya.currency}
+        </div>
+      `).join('');
+
+      // Members Table
+      const tbody = document.getElementById('membersTableBody');
+      tbody.innerHTML = '';
+      state.members.forEach(m => {
+        const requiredAmount = (m.ratio * state.gameya.monthlyShareInstallment).toLocaleString();
+        let statusBadge = '<span class="pill pill-warning">في الانتظار</span>';
+        if (m.installmentStatus === 'paid') statusBadge = '<span class="pill pill-success">تم السداد ✔</span>';
+        if (m.installmentStatus === 'review') statusBadge = '<span class="pill pill-info">إيصال قيد المراجعة</span>';
+        if (m.installmentStatus === 'overdue') statusBadge = '<span class="pill pill-danger">متأخر (تجاوز 7 أيام)</span>';
+
+        let actions = '';
+        if (state.role === 'organizer') {
+          if (m.installmentStatus === 'review') {
+            actions += `<button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="approveReceipt('${m.id}')">قبول الإيصال</button> `;
+          } else if (m.installmentStatus !== 'paid') {
+            actions += `<button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="markPaid('${m.id}')">تسجيل مدفوع</button> `;
+          }
+          if (m.installmentStatus !== 'paid') {
+            actions += `<button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="sendWhatsAppReminder('${m.name}', '${m.phone}', ${m.ratio * state.gameya.monthlyShareInstallment})">واتساب 💬</button>`;
+          }
+        } else {
+          // Member view for Ahmed (m2)
+          if (m.id === 'm2' && m.installmentStatus !== 'paid') {
+            actions += `<button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="uploadReceipt('m2')">رفع إيصال إنستاباي</button>`;
+          }
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${m.name}</strong></td>
+          <td>سهم #${m.shareGroupId} (${m.ratio * 100}%)</td>
+          <td>شهر ${m.payoutMonth}</td>
+          <td>${requiredAmount} ${state.gameya.currency}</td>
+          <td>${statusBadge}</td>
+          <td>${actions || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function switchRole(newRole) {
+      state.role = newRole;
+      log(`تم التبديل إلى: ${newRole === 'organizer' ? 'المنظم' : 'المشترك (أحمد)'}`);
+      render();
+    }
+
+    function markPaid(memberId) {
+      const m = state.members.find(x => x.id === memberId);
+      if (m) {
+        m.installmentStatus = 'paid';
+        log(`المنظم: تم تسجيل قسط المشترك [${m.name}] كمدفوع نقداً.`);
+        render();
+      }
+    }
+
+    function approveReceipt(memberId) {
+      const m = state.members.find(x => x.id === memberId);
+      if (m) {
+        m.installmentStatus = 'paid';
+        log(`المنظم: تم التحقق من إيصال إنستاباي وقبول سداد [${m.name}] بنجاح.`);
+        render();
+      }
+    }
+
+    function uploadReceipt(memberId) {
+      const m = state.members.find(x => x.id === memberId);
+      if (m) {
+        m.installmentStatus = 'review';
+        m.receiptUrl = 'instapay_transfer_proof.jpg';
+        log(`المشترك (${m.name}): تم ضغط صورة الإيصال (120KB) ورفعها. في انتظار اعتماد المنظم.`);
+        render();
+      }
+    }
+
+    function sendWhatsAppReminder(name, phone, amount) {
+      const msg = `السلام عليكم ${name}، نذكرك بموعد قسط الجمعية بقيمة ${amount} ج.م لشهر 2.`;
+      alert(`سيتم فتح واتساب عبر الرابط:\nhttps://wa.me/20${phone.substring(1)}?text=${encodeURIComponent(msg)}`);
+      log(`المنظم: تم إطلاق تذكير واتساب مباشر لـ [${name}].`);
+    }
+
+    function generateBroadcastText() {
+      const text = `📢 تقرير جمعية النخبة - شهر 2\n✅ عدد المسددين: 2 من 5\n🌟 مستفيد الشهر: أحمد محمود ومنى فريد\n💵 المحصل: 15,000 ج.م من 30,000 ج.م`;
+      alert(`تم نسخ التقرير لجروب الواتساب:\n\n${text}`);
+      log(`المنظم: تم توليد تقرير متابعة الجروب بنجاح.`);
+    }
+
+    function activateGameya() {
+      state.gameya.status = 'active';
+      log(`🎉 تم التحقق الرياضي بنجاح! الجمعية نشطة الآن وتم قفل الشروط المالية ضد أي تعديل.`);
+      render();
+    }
+
+    function disbursePot() {
+      state.disbursement.status = 'disbursed';
+      log(`المنظم: تم تسليم مبلغ الصندوق لمستحقي شهر 2 عبر إنستاباي. بدأ عداد التأكيد التلقائي (48 ساعة).`);
+      alert('تم التسليم! إذا لم يؤكد المشترك الاستلام خلال 48 ساعة، سيتم التأكيد تلقائياً.');
+      render();
+    }
+
+    // Scenarios Engine
+    function loadScenario(num) {
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === num - 1);
+      });
+
+      const desc = document.getElementById('scenarioDescription');
+      const actions = document.getElementById('scenarioActions');
+
+      if (num === 1) {
+        desc.innerHTML = `<strong>السيناريو 1: الأسهم المقسمة المستقلة (50% / 50%)</strong><br/>سهم مقسم بين (أحمد وطارق) كل منهما 50%، واختار أحمد شهر 2 وطارق شهر 3. النظام وزنهما مع شريكين آخرين (منى وهدى) ليكتمل شهر 2 وشهر 3 بنسبة 100% لكل منهما بدون أي عجز.`;
+        actions.innerHTML = `
+          <button class="btn btn-outline" onclick="log('السيناريو 1 قيد العرض: لاحظ الشهور 2 و3 كلاهما مكتمل بنسبة 100%')">ملاحظة اكتمال الشهور</button>
+        `;
+      } else if (num === 2) {
+        desc.innerHTML = `<strong>السيناريو 2: كشف العجز وبلوك التفعيل</strong><br/>إذا حاول المنظم تعيين مشترك بنصف سهم في شهر 2 دون وجود شريك يكمل باقي الشهر (50% فقط)، يظهر المؤشر باللون الأصفر ويقفل زر التفعيل لحماية الصندوق.`;
+        actions.innerHTML = `
+          <button class="btn btn-danger" onclick="simulateDeficit()">إحداث عجز في شهر 2 (حذف شريك)</button>
+          <button class="btn btn-primary" onclick="simulateFixDeficit()">إصلاح العجز (إضافة شريك مكمل)</button>
+        `;
+      } else if (num === 3) {
+        desc.innerHTML = `<strong>السيناريو 3: دورة رفع الإيصال والاعتماد</strong><br/>المشترك يرفع لقطة شاشة لتحويل إنستاباي، فتتحول الحالة إلى 'قيد المراجعة'، ويصل إشعار للمنظم ليعتمدها بضغطة واحدة.`;
+        actions.innerHTML = `
+          <button class="btn btn-outline" onclick="switchRole('member'); uploadReceipt('m2');">خطوة 1: المشترك يرفع إيصال</button>
+          <button class="btn btn-primary" onclick="switchRole('organizer'); approveReceipt('m2');">خطوة 2: المنظم يعتمد الإيصال</button>
+        `;
+      } else if (num === 4) {
+        desc.innerHTML = `<strong>السيناريو 4: تبديل شهر القبض (Turn Swap)</strong><br/>أحمد (50% - شهر 2) يريد التبديل مع طارق (50% - شهر 3). يقبل النظام التبديل لأن نسب الأسهم متطابقة تماماً.`;
+        actions.innerHTML = `
+          <button class="btn btn-primary" onclick="executeSwap('m2', 'm3')">تنفيذ التبديل بين أحمد وطارق</button>
+        `;
+      }
+    }
+
+    function simulateDeficit() {
+      state.members[3].payoutMonth = 3; // Move Mona from month 2 to 3, making month 2 only 50%!
+      state.gameya.status = 'recruiting';
+      log(`⚠️ تم نقل منى لشهر 3: أصبح شهر 2 به عجز (50%) وشهر 3 به فائض (150%)! تم قفل زر التفعيل.`);
+      render();
+    }
+
+    function simulateFixDeficit() {
+      state.members[3].payoutMonth = 2; // Move back
+      log(`✅ تم إعادة منى لشهر 2: عادت جميع الشهور لنسبة 100% المتزنة. تم فتح زر التفعيل.`);
+      render();
+    }
+
+    function executeSwap(id1, id2) {
+      const m1 = state.members.find(x => x.id === id1);
+      const m2 = state.members.find(x => x.id === id2);
+      if (m1 && m2) {
+        if (m1.ratio !== m2.ratio) {
+          alert('خطأ: لا يمكن التبديل لأن نسب الأسهم غير متساوية!');
+          return;
+        }
+        const temp = m1.payoutMonth;
+        m1.payoutMonth = m2.payoutMonth;
+        m2.payoutMonth = temp;
+        log(`🔄 تم تبديل موعد القبض بنجاح بموافقة الطرفين واعتماد الأدمن: ${m1.name} أصبح شهر ${m1.payoutMonth}، و${m2.name} أصبح شهر ${m2.payoutMonth}.`);
+        render();
+      }
+    }
+
+    // Initial render
+    render();
+    loadScenario(1);
+    log('تم تشغيل النموذج الأولي لمنصة الجمعيات بنجاح.');
+  </script>
+</body>
+</html>

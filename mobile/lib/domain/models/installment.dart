@@ -1,10 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 enum InstallmentStatus {
   pending,
   review,
   paid,
   overdue,
+}
+
+DateTime? _parseNullableDate(dynamic val) {
+  if (val == null) return null;
+  if (val is DateTime) return val;
+  if (val is String) return DateTime.tryParse(val);
+  try {
+    return (val as dynamic).toDate();
+  } catch (_) {
+    return null;
+  }
 }
 
 class Installment {
@@ -41,9 +50,9 @@ class Installment {
       'amount': amount,
       'status': status.name,
       'receiptUrl': receiptUrl,
-      'paidAt': paidAt != null ? Timestamp.fromDate(paidAt!) : null,
+      'paidAt': paidAt?.toIso8601String(),
       'verifiedBy': verifiedBy,
-      'dueDate': dueDate != null ? Timestamp.fromDate(dueDate!) : null,
+      'dueDate': dueDate?.toIso8601String(),
     };
   }
 
@@ -59,9 +68,9 @@ class Installment {
         orElse: () => InstallmentStatus.pending,
       ),
       receiptUrl: map['receiptUrl'],
-      paidAt: (map['paidAt'] as Timestamp?)?.toDate(),
+      paidAt: _parseNullableDate(map['paidAt']),
       verifiedBy: map['verifiedBy'],
-      dueDate: (map['dueDate'] as Timestamp?)?.toDate(),
+      dueDate: _parseNullableDate(map['dueDate']),
     );
   }
 
@@ -76,6 +85,9 @@ class Installment {
     DateTime? paidAt,
     String? verifiedBy,
     DateTime? dueDate,
+    bool clearPaidAt = false,
+    bool clearVerifiedBy = false,
+    bool clearReceiptUrl = false,
   }) {
     return Installment(
       id: id ?? this.id,
@@ -84,9 +96,9 @@ class Installment {
       monthNumber: monthNumber ?? this.monthNumber,
       amount: amount ?? this.amount,
       status: status ?? this.status,
-      receiptUrl: receiptUrl ?? this.receiptUrl,
-      paidAt: paidAt ?? this.paidAt,
-      verifiedBy: verifiedBy ?? this.verifiedBy,
+      receiptUrl: clearReceiptUrl ? null : (receiptUrl ?? this.receiptUrl),
+      paidAt: clearPaidAt ? null : (paidAt ?? this.paidAt),
+      verifiedBy: clearVerifiedBy ? null : (verifiedBy ?? this.verifiedBy),
       dueDate: dueDate ?? this.dueDate,
     );
   }

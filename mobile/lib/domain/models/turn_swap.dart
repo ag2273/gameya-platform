@@ -1,10 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 enum TurnSwapStatus {
   pendingTarget,
   pendingOrganizer,
   approved,
   rejected,
+}
+
+DateTime _parseDate(dynamic val) {
+  if (val == null) return DateTime.now();
+  if (val is DateTime) return val;
+  if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
+  try {
+    return (val as dynamic).toDate();
+  } catch (_) {
+    return DateTime.now();
+  }
 }
 
 class TurnSwap {
@@ -40,7 +49,7 @@ class TurnSwap {
       'targetMonth': targetMonth,
       'shareRatio': shareRatio,
       'status': status.name,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
@@ -57,7 +66,31 @@ class TurnSwap {
         (e) => e.name == map['status'],
         orElse: () => TurnSwapStatus.pendingTarget,
       ),
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: _parseDate(map['createdAt']),
+    );
+  }
+
+  TurnSwap copyWith({
+    String? id,
+    String? gameyaId,
+    String? requesterMemberId,
+    String? targetMemberId,
+    int? requesterMonth,
+    int? targetMonth,
+    double? shareRatio,
+    TurnSwapStatus? status,
+    DateTime? createdAt,
+  }) {
+    return TurnSwap(
+      id: id ?? this.id,
+      gameyaId: gameyaId ?? this.gameyaId,
+      requesterMemberId: requesterMemberId ?? this.requesterMemberId,
+      targetMemberId: targetMemberId ?? this.targetMemberId,
+      requesterMonth: requesterMonth ?? this.requesterMonth,
+      targetMonth: targetMonth ?? this.targetMonth,
+      shareRatio: shareRatio ?? this.shareRatio,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }
